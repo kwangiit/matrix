@@ -1261,7 +1261,7 @@ int main(int argc, char *argv[]) {
 //----------- Settings about ZHT server----------------
 // General version, work for both TCP and UDP.
 //	cout << "Use: hash-phm <port> <neighbor_list_file> <config_file>" << endl;
-	if (argc != 11) { //or 3?
+	if (argc != 12) { //or 3?
 		//fprintf(stderr, "Usage: %s [port]\n", argv[0]);
 		cout << "argc = " << argc << endl;
 		cout << "Usage: " << argv[0] << "\tserver_port_no\t"
@@ -1273,7 +1273,8 @@ int main(int argc, char *argv[]) {
 										"max_tasks_per_package\t"
 										"num_tasks\t"
 										"prefix\t"
-										"shared" << endl;
+										"shared\t"
+										"num_cores" << endl;
 		exit(EXIT_FAILURE);
 	}
 //cout << " 1";

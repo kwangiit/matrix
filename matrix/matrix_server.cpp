@@ -118,11 +118,11 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	poll_interval = start_poll;
 	poll_threshold = start_thresh;
 	num_nodes = svrclient.memberList.size();
-	num_cores = 4;
+	num_cores = atoi(parameters[11]);
 	num_idle_cores = num_cores;
 	neigh_mode = 'd';
 	//worker.num_neigh = (int)(sqrt(worker.num_nodes));
-	num_neigh = (int)(log(num_nodes)/log(2));
+	num_neigh = (int)(sqrt(num_nodes));
 	neigh_index = new int[num_neigh];
 	selfIndex = getSelfIndex(ip, atoi(parameters[1]), svrclient.memberList);	// replace "localhost" with proper hostname, host is the IP in C++ string
 	ostringstream oss;
@@ -163,10 +163,10 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	taskstr = tasksPackage.SerializeAsString();
 
 	srand((selfIndex+1)*(selfIndex+5));
-	int rand_wait = rand() % 20;
+	int rand_wait = rand() % 1000000;
 	cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << endl;
 	//cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << " going to wait for " << rand_wait << " seconds" << endl;
-	sleep(rand_wait);
+	usleep(rand_wait);
 
 	file_worker_start.append(oss.str());
         string cmd("touch ");
@@ -1185,7 +1185,7 @@ void* check_ready_queue(void* args) {
 				long duration;
 				//duration = 1000000;
 				duration_ss >> duration;
-
+				duration = duration / duration - 1;
 				string client_id;
 				try {
 					client_id = tokenize_string.at(0).at(2);
@@ -1211,7 +1211,7 @@ void* check_ready_queue(void* args) {
 				timespec task_start_time, task_end_time;
 				clock_gettime(CLOCK_REALTIME, &task_start_time);
 				//uint32_t exit_code = sleep(duration);
-				cout << "The duration of this task is:" << duration << endl;
+				//cout << "The duration of this task is:" << duration << endl;
 				uint32_t exit_code = usleep(duration);
 				clock_gettime(CLOCK_REALTIME, &task_end_time);
 				

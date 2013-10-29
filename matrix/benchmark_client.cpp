@@ -322,7 +322,7 @@ int benchmarkALL(int numTest, int strLen) { //103+length
 
 int main(int argc, char* argv[]) {
 
-	if(argc != 13) {
+	if(argc != 15) {
         	cout << "Usage: " << argv[0] << "\tper_client_task\t"
         									"neighborlist_file\t"
         									"zht_config_file\t"
@@ -334,7 +334,9 @@ int main(int argc, char* argv[]) {
         									"num_tasks\t"
         									"prefix\t"
         									"shared\t"
-        									"DAG_choice" << endl;
+        									"DAG_choice\t"
+        									"num_cores\t"
+        									"monitor_interval" << endl;
                 exit(1);
         }
 	srand(getpid() + getTime_usec());
@@ -363,7 +365,7 @@ int main(int argc, char* argv[]) {
 
 	set_dir(argv[10], argv[11]);
 	//initialze the client
-	mc.init(num_tasks, sleep_time, testClient, logging, index);
+	mc.init(num_tasks, sleep_time, testClient, logging, index, atoi(argv[13]), atoi(argv[14]));
 
 	//initialze the tasks
 	//mc.initializeTasks(per_client_task, sleep_time, mode, max_tasks_per_package, testClient);

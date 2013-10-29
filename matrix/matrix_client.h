@@ -36,7 +36,7 @@ public:
 	
 	vector<string> task_str_list; 
 
-	int init(int num_tasks, int numSleep, ZHTClient &clientRet, int log, int index);	
+	int init(int num_tasks, int numSleep, ZHTClient &clientRet, int log, int index, int num_cores, int monitor_interval);
 	int initializeTasks(int num_tasks, int numSleep, int mode, int max_tasks_per_package, ZHTClient &clientRet, int DAG_choice);
 	pthread_t monitor(int num_tasks, ZHTClient &clientRet);
 };

@@ -10,6 +10,8 @@ timespec start_tasks, end_tasks;
 static int cl_LOGGING = 0;
 int start_flag = 0;
 uint32_t total_num_tasks = 0;
+int ncores = 0;
+int minterval = 0;
 //uint32_t total_submitted = 0;
 
 static pthread_attr_t attr; // thread attribute
@@ -57,7 +59,7 @@ void get_map(vector<string> &mqueue, uint32_t num_nodes) {
 }
 
 //initialize client parameters
-int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int log, int index) {
+int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int log, int index, int num_cores, int monitor_interval) {
 	//cout << "mc: prefix = " << prefix << " shared = " << shared << endl;
 
 	//client_id is the host name of the client
@@ -69,6 +71,8 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 	}
 
 	total_num_tasks = num_tasks;
+	ncores = num_cores;
+	minterval = monitor_interval;
         //total_submitted = num_tasks;
 
 	// string host("localhost");
@@ -561,7 +565,7 @@ void *monitor_function(void* args) {
 
 	//int num_worker = clientRet.memberList.size();
 	int num_worker = clientRet->memberList.size();
-	int num_cores = 4;
+	int num_cores = ncores;
 	int index = 0;
 	long termination_value = num_worker * num_cores * -1;
 
@@ -605,7 +609,7 @@ void *monitor_function(void* args) {
 	string result = executeShell(cmd);*/
 	
 	while(atoi(result.c_str()) < 1) {
-		sleep(5);
+		usleep(minterval);
 		result = executeShell(cmd); cout << " temp result = " << result << endl;
 	} 
 	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
@@ -634,7 +638,7 @@ void *monitor_function(void* args) {
 		queued_busy = total_queued + total_busy;
 		finished = total_num_tasks - queued_busy;
 		clock_gettime(CLOCK_REALTIME, &end_tasks);
-		cout << "Total busy cores " << total_busy << " Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;//" time = " << end_tasks.tv_sec << " " << end_tasks.tv_nsec << endl;
+		//cout << "Total busy cores " << total_busy << " Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;//" time = " << end_tasks.tv_sec << " " << end_tasks.tv_nsec << endl;
 		if (client_logfile.is_open() && cl_LOGGING) {
 			client_logfile << "Total busy cores " << total_busy << "  Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;
 		}
@@ -645,7 +649,7 @@ void *monitor_function(void* args) {
                         break;
                 }
 
-		usleep(200000);
+		usleep(minterval);
 	}
 
 	total_msg_count = 0;
