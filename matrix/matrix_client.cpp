@@ -22,8 +22,8 @@ string loadfile_name;
 ofstream client_logfile;
 ofstream loadfile;
 
-#define SIXTY_KILOBYTES 61440
-#define STRING_THRESHOLD SIXTY_KILOBYTES
+#define Eight_KILOBYTES 8192
+#define STRING_THRESHOLD Eight_KILOBYTES
 typedef deque<string> NodeList;
 map<uint32_t, NodeList> update_map;
 static uint32_t tcount = 0;
@@ -403,7 +403,7 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 	int num_tasks; // number of tasks actually generated
 	TaskDAG dag = generate_DAG(num_tasks_req, num_tasks, client_id, DAG_choice); //cout << "total tasks = " << num_tasks << endl;
 	//total_num_tasks = num_tasks * num_worker;
-	total_num_tasks = num_tasks;
+	//total_num_tasks = num_tasks;
 	print_DAG(dag);
 
 	// Submission time for the task; for simplicity it is kept same for all tasks
@@ -595,11 +595,11 @@ void *monitor_function(void* args) {
 	//min_lines++;
 
 	// not sure why we need this
-	string filename(shared);
-        filename = filename + "startinfo" + num_ss.str();
-        string cmd("cat ");
-        cmd = cmd + filename + " | wc -l";
-        string result = executeShell(cmd);
+//	string filename(shared);
+//        filename = filename + "startinfo" + num_ss.str();
+//        string cmd("cat ");
+//        cmd = cmd + filename + " | wc -l";
+//        string result = executeShell(cmd);
 	//cout << cmd << " " << result << endl;
 	//cout << "client: minlines = " << min_lines << " cmd = " << cmd << " result = " << result << endl;
 	/*string filename(shared);
@@ -608,11 +608,11 @@ void *monitor_function(void* args) {
 	cmd = cmd + filename + " | awk {\'print $1\'}";
 	string result = executeShell(cmd);*/
 	
-	while(atoi(result.c_str()) < 1) {
-		usleep(minterval);
-		result = executeShell(cmd); cout << " temp result = " << result << endl;
-	} 
-	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
+//	while(atoi(result.c_str()) < 1) {
+//		usleep(minterval);
+//		result = executeShell(cmd); cout << " temp result = " << result << endl;
+//	}
+//	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
 	//cout << "starting to monitor" << endl;
 	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << endl;
 	while(1) {

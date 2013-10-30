@@ -395,12 +395,13 @@ int main(int argc, char* argv[]) {
 	
 	//cout << "bench: minlines = " << min_lines << " cmd = " << cmd << " result = " << result << endl;
 	//mc.submitTasks(mode, testClient);
+
+	mc.initializeTasks(per_client_task, sleep_time, mode, max_tasks_per_package, testClient, DAG_choice);
 	pthread_t monitor_thread;
 	/* */
 	if(index == 1) {
 		monitor_thread = mc.monitor(num_tasks, testClient);
 	}
-	mc.initializeTasks(per_client_task, sleep_time, mode, max_tasks_per_package, testClient, DAG_choice);
 	//mc.submitTasks(mode, testClient);
 	if(index == 1){
 		pthread_join(monitor_thread, NULL);
