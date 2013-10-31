@@ -26,6 +26,8 @@ ofstream loadfile;
 #define STRING_THRESHOLD EIGHT_KILOBYTES
 typedef deque<string> NodeList;
 map<uint32_t, NodeList> update_map;
+map<uint32_t, NodeList> update_map_zht;
+
 static uint32_t tcount = 0;
 void get_map(vector<string> &mqueue, uint32_t num_nodes) {
         //map<uint32_t, NodeList> update_map;
@@ -43,6 +45,37 @@ void get_map(vector<string> &mqueue, uint32_t num_nodes) {
                 }
                 else {
                         NodeList &exist_list = update_map[serverid];
+                        string last_str(exist_list.back());
+                        if((last_str.size() + str.size()) > STRING_THRESHOLD) {
+                                str.append("$");
+                                exist_list.push_back(str);
+                        }
+                        else {
+                                exist_list.pop_back();
+                                str.append(last_str);
+                                exist_list.push_back(str);
+                        }
+                }
+        }
+        //return update_map;
+}
+
+void get_map_1(vector<string> &mqueue, uint32_t num_nodes) {
+        //map<uint32_t, NodeList> update_map;
+        //uint32_t num_nodes = svrclient.memberList.size();
+        for(vector<string>::iterator it = mqueue.begin(); it != mqueue.end(); ++it) {
+                Package package;
+                package.ParseFromString(*it); //cout << "key = " << package.virtualpath() << endl;
+                uint32_t serverid = myhash(package.virtualpath().c_str(), num_nodes);
+                string str(*it); str.append("#");
+                if(update_map_zht.find(serverid) == update_map_zht.end()) {
+                        str.append("$");
+                        NodeList new_list;
+                        new_list.push_back(str);
+                        update_map_zht.insert(make_pair(serverid, new_list));
+                }
+                else {
+                        NodeList &exist_list = update_map_zht[serverid];
                         string last_str(exist_list.back());
                         if((last_str.size() + str.size()) > STRING_THRESHOLD) {
                                 str.append("$");
@@ -381,6 +414,108 @@ void submittasks(ZHTClient &clientRet) {
         cout << " no. tasks inserted = " << ret << endl;
 }
 
+vector< vector<string> > tokenize_1(string input, char delim1, char delim2, int &num_vector, int &per_vector_count) {
+	vector< vector<string> > token_vector;
+	stringstream whole_stream(input);
+	num_vector = 0; per_vector_count = 0;
+	string perstring;
+	while(getline(whole_stream, perstring, delim1)) { //cout << "pertask = " << pertask << endl;
+		num_vector++;
+                vector<string> per_vector;
+                size_t prev = 0, pos;
+		while ((pos = perstring.find_first_of(delim2, prev)) != string::npos) {
+                       	if (pos > prev) {
+				try {
+                               		per_vector.push_back(perstring.substr(prev, pos-prev));
+				}
+				catch (exception& e) {
+					cout << "tokenize: (prev, pos-prev) " << " " << e.what() << endl;
+					exit(1);
+				}
+                       	}
+              		prev = pos+1;
+               	}
+               	if (prev < perstring.length()) {
+			try {
+                       		per_vector.push_back(perstring.substr(prev, string::npos));
+			}
+			catch (exception& e) {
+                       	        cout << "tokenize: (prev, string::npos) " << " " << e.what() << endl;
+                               	exit(1);
+                        }
+               	}
+		try {
+			token_vector.push_back(per_vector);
+		}
+		catch (exception& e) {
+                        cout << "tokenize: token_vector.push_back " << " " << e.what() << endl;
+                	exit(1);
+                }
+	}
+	if(token_vector.size() > 0) {
+		per_vector_count = token_vector.at(0).size();
+	}
+	return token_vector;
+}
+
+
+void submittaskszht(ZHTClient &clientRet, string client_id)
+{
+	int ret = 0;
+	Package package;
+	package.set_virtualpath(client_id);
+	package.set_operation(21);
+	cout << "Ok, what is the hell!\n" << endl;
+
+	for (map<uint32_t, NodeList>::iterator map_it = update_map_zht.begin(); map_it != update_map_zht.end(); ++map_it)
+	{
+		uint32_t index = map_it->first;
+		NodeList &update_list = map_it->second;
+		while (!update_list.empty())
+		{
+			int num_vector_count, per_vector_count;
+			string alltasks;
+			vector< vector<string> > tokenize_string = tokenize_1(update_list.front(), '$', '#', num_vector_count, per_vector_count);
+			//cout << " num_vector_count = " << num_vector_count << " per_vector_count = " << per_vector_count << endl;
+			for(int i = 0; i < per_vector_count; i++)
+			{
+				Package tmpPackage;
+				tmpPackage.ParseFromString(tokenize_string.at(0).at(i));
+				string key = tmpPackage.virtualpath();
+				alltasks.append(key); alltasks.append("\'\"");
+			} //cout << "Serve
+			package.set_realfullpath(alltasks);
+			string str = package.SerializeAsString();
+			ret += clientRet.svrtosvr(str, str.length(), index);
+			update_list.pop_front();
+		}
+	}
+
+//	Package package; string alltasks;
+//			package.set_virtualpath(client_id); // Here key is just the client ID
+//			package.set_operation(21);
+//			//package.set_operation(22);
+//			num_packages++;
+//
+//			int num_tasks_this_package = max_tasks_per_package;
+//			int num_tasks_left = num_tasks - total_submitted1;
+//			if (num_tasks_left < max_tasks_per_package) {
+//				num_tasks_this_package = num_tasks_left;
+//			}
+//			for(int j = 0; j < num_tasks_this_package; j++) {
+//				int task_id = it->first; ++it;
+//
+//	        	        stringstream task_id_ss;
+//	                	task_id_ss << task_id << client_id; // Task ID + Client ID
+//				alltasks.append(task_id_ss.str()); alltasks.append("\'\""); // Task ID
+//			}
+//			total_submitted1 = total_submitted1 + num_tasks_this_package;
+//			package.set_realfullpath(alltasks);
+//			string str = package.SerializeAsString();
+//			//cout << "String size = " << str.size() << " str length = " << strlen(str.c_str());
+//			int32_t ret = clientRet.svrtosvr(str, str.length(), toserver);
+}
+
 int index_start = 0;
 //initialize all tasks
 int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int max_tasks_per_package, ZHTClient &clientRet, int DAG_choice){
@@ -505,35 +640,38 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 	static int id = 0;
 	// Measure the start time for task submission into Wait queue
 	clock_gettime(CLOCK_REALTIME, &start_tasks);
-	TaskDAG::iterator it = dag.begin();
-	while (total_submitted1 != num_tasks) {
-		Package package; string alltasks;
-		package.set_virtualpath(client_id); // Here key is just the client ID
-		package.set_operation(21);			
-		//package.set_operation(22);
-		num_packages++;
-			
-		int num_tasks_this_package = max_tasks_per_package;
-		int num_tasks_left = num_tasks - total_submitted1;
-		if (num_tasks_left < max_tasks_per_package) {
-			num_tasks_this_package = num_tasks_left;
-		}
-		for(int j = 0; j < num_tasks_this_package; j++) {
-			int task_id = it->first; ++it;
-
-        	        stringstream task_id_ss;
-                	task_id_ss << task_id << client_id; // Task ID + Client ID
-			alltasks.append(task_id_ss.str()); alltasks.append("\'\""); // Task ID
-		}
-		total_submitted1 = total_submitted1 + num_tasks_this_package;
-		package.set_realfullpath(alltasks);
-		string str = package.SerializeAsString();
-		//cout << "String size = " << str.size() << " str length = " << strlen(str.c_str());
-		int32_t ret = clientRet.svrtosvr(str, str.length(), toserver);
-                //int32_t ret = clientRet.svrtosvr(str, str.length(), selfindex);
-	}
-	//cout << "No. of packages = " << num_packages;
-	cout << "\tTotal Jobs submitted = " << total_submitted1 << endl;
+//	TaskDAG::iterator it = dag.begin();
+//	while (total_submitted1 != num_tasks) {
+//		Package package; string alltasks;
+//		package.set_virtualpath(client_id); // Here key is just the client ID
+//		package.set_operation(21);
+//		//package.set_operation(22);
+//		num_packages++;
+//
+//		int num_tasks_this_package = max_tasks_per_package;
+//		int num_tasks_left = num_tasks - total_submitted1;
+//		if (num_tasks_left < max_tasks_per_package) {
+//			num_tasks_this_package = num_tasks_left;
+//		}
+//		for(int j = 0; j < num_tasks_this_package; j++) {
+//			int task_id = it->first; ++it;
+//
+//        	        stringstream task_id_ss;
+//                	task_id_ss << task_id << client_id; // Task ID + Client ID
+//			alltasks.append(task_id_ss.str()); alltasks.append("\'\""); // Task ID
+//		}
+//		total_submitted1 = total_submitted1 + num_tasks_this_package;
+//		package.set_realfullpath(alltasks);
+//		string str = package.SerializeAsString();
+//		//cout << "String size = " << str.size() << " str length = " << strlen(str.c_str());
+//		int32_t ret = clientRet.svrtosvr(str, str.length(), toserver);
+//                //int32_t ret = clientRet.svrtosvr(str, str.length(), selfindex);
+//	}
+	cout << "Before submitting to ZHT!" << endl;
+	get_map_1(task_str_list, num_worker);
+	cout << "continue" << endl;
+	submittaskszht(clientRet, client_id);
+	cout << "\tTotal Jobs submitted = " << num_tasks << endl;
 	clock_gettime(CLOCK_REALTIME, &end_tasks); // Measure the end time to insert all tasks into Wait queue
 	diff = timediff(start_tasks, end_tasks); // Measure the total time to insert all tasks into Wait queue
 	//cout << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << endl;

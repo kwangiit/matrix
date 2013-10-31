@@ -165,7 +165,7 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	taskstr = tasksPackage.SerializeAsString();
 
 	srand((selfIndex+1)*(selfIndex+5));
-	int rand_wait = rand() % 20;
+	int rand_wait = rand() % 100;
 	cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << endl;
 	//cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << " going to wait for " << rand_wait << " seconds" << endl;
 	sleep(rand_wait);
