@@ -67,7 +67,8 @@ int diff_thresh = 500;
 timespec poll_start, poll_end;
 uint64_t failed_attempts = 0;
 uint64_t fail_threshold = 1000;
-int work_steal_signal = 1;
+int work_steal_signal = 0;
+int ws_sleep = 0;
 
 //Worker *worker;
 static NoVoHT *pmap;
@@ -119,6 +120,7 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	poll_threshold = start_thresh;
 	num_nodes = svrclient.memberList.size();
 	num_cores = atoi(parameters[11]);
+	ws_sleep = atoi(parameters[12]);
 	num_idle_cores = num_cores;
 	neigh_mode = 'd';
 	//worker.num_neigh = (int)(sqrt(worker.num_nodes));
@@ -163,10 +165,10 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	taskstr = tasksPackage.SerializeAsString();
 
 	srand((selfIndex+1)*(selfIndex+5));
-	int rand_wait = rand() % 1000000;
+	int rand_wait = rand() % 20;
 	cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << endl;
 	//cout << "Worker ip = " << ip << " selfIndex = " << selfIndex << " going to wait for " << rand_wait << " seconds" << endl;
-	usleep(rand_wait);
+	sleep(rand_wait);
 
 	file_worker_start.append(oss.str());
         string cmd("touch ");
@@ -1031,7 +1033,7 @@ void* worksteal(void* args){
 	string result1 = executeShell(cmd1);
 	//cout << "server: minlines = " << min_lines << " cmd = " << cmd << " result = " << result << endl;
 	while(atoi(result1.c_str()) < 1) {
-		sleep(2);
+		usleep(ws_sleep);
 		result1 = executeShell(cmd1);
 	}
 	//cout << "worksteal started: server: " << worker->selfIndex << " minlines = " << 1 << " cmd = " << cmd1 << " result = " << result1 << endl;
@@ -1283,7 +1285,8 @@ int32_t Worker::get_monitoring_info() {
 	if (LOGGING) {
 		log_fp << "rqueue = " << rqueue.size() << " mqueue = " << mqueue.size() << " wqueue = " << wqueue.size() << endl;
 	}
-	return (((rqueue.size() + mqueue.size() + wqueue.size()) * 10) + num_idle_cores);
+	return task_comp_count;
+	//(((rqueue.size() + mqueue.size() + wqueue.size()) * 10) + num_idle_cores);
 }
 
 int32_t Worker::get_numtasks_to_steal() {

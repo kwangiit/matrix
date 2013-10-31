@@ -22,8 +22,8 @@ string loadfile_name;
 ofstream client_logfile;
 ofstream loadfile;
 
-#define Eight_KILOBYTES 8192
-#define STRING_THRESHOLD Eight_KILOBYTES
+#define EIGHT_KILOBYTES 8192
+#define STRING_THRESHOLD EIGHT_KILOBYTES
 typedef deque<string> NodeList;
 map<uint32_t, NodeList> update_map;
 static uint32_t tcount = 0;
@@ -94,12 +94,12 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 		outputfile.append(suffix);
 		client_logfile.open(outputfile.c_str());
 	}
-	if(index == 1){
-		loadfile_name.append(prefix);
-		loadfile_name.append("worker_load");
-		loadfile_name.append(suffix);
-		loadfile.open(loadfile_name.c_str(), ios_base::app);
-	}
+//	if(index == 1){
+//		loadfile_name.append(prefix);
+//		loadfile_name.append("worker_load");
+//		loadfile_name.append(suffix);
+//		loadfile.open(loadfile_name.c_str(), ios_base::app);
+//	}
 
 	pthread_attr_init(&attr); // set thread detachstate attribute to DETACHED
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -314,7 +314,7 @@ void print_DAG(TaskDAG &dag) {
                 //cout << "Vertex = " << vertex << " Indegree = " << value.first << " AdjList = " << value.second << endl;
 		client_logfile << "Vertex = " << vertex << " Indegree = " << value.first << " AdjList = " << value.second << endl;
         }
-	cout << "expected_notifications = " << expected_notifications << endl;
+	//cout << "expected_notifications = " << expected_notifications << endl;
 	client_logfile << "expected_notifications = " << expected_notifications << endl;
 }
 
@@ -404,7 +404,7 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 	TaskDAG dag = generate_DAG(num_tasks_req, num_tasks, client_id, DAG_choice); //cout << "total tasks = " << num_tasks << endl;
 	//total_num_tasks = num_tasks * num_worker;
 	//total_num_tasks = num_tasks;
-	print_DAG(dag);
+	//print_DAG(dag);
 
 	// Submission time for the task; for simplicity it is kept same for all tasks
 	timespec sub_time;
@@ -592,15 +592,17 @@ void *monitor_function(void* args) {
 	int num = num_worker - 1;
 	stringstream num_ss;
 	num_ss << num;
+
+	long num_monitor = 0;
 	//min_lines++;
 
 	// not sure why we need this
-//	string filename(shared);
-//        filename = filename + "startinfo" + num_ss.str();
-//        string cmd("cat ");
-//        cmd = cmd + filename + " | wc -l";
-//        string result = executeShell(cmd);
-	//cout << cmd << " " << result << endl;
+	string filename(shared);
+        filename = filename + "startinfo" + num_ss.str();
+        string cmd("cat ");
+        cmd = cmd + filename + " | wc -l";
+        string result = executeShell(cmd);
+	cout << cmd << " " << result << endl;
 	//cout << "client: minlines = " << min_lines << " cmd = " << cmd << " result = " << result << endl;
 	/*string filename(shared);
 	filename = filename + "start_info";
@@ -608,41 +610,56 @@ void *monitor_function(void* args) {
 	cmd = cmd + filename + " | awk {\'print $1\'}";
 	string result = executeShell(cmd);*/
 	
-//	while(atoi(result.c_str()) < 1) {
-//		usleep(minterval);
-//		result = executeShell(cmd); cout << " temp result = " << result << endl;
-//	}
-//	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
+	while(atoi(result.c_str()) < 1) {
+		usleep(minterval);
+		result = executeShell(cmd); cout << " temp result = " << result << endl;
+	}
+	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
 	//cout << "starting to monitor" << endl;
 	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << endl;
+	timespec local_start, local_diff;
+	clock_gettime(CLOCK_REALTIME, &local_start);
+	local_diff = timediff(start_tasks, local_start);
+	if (client_logfile.is_open() && cl_LOGGING) {
+			client_logfile << "Submission time: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << endl;
+			client_logfile << "Monitoring time: " << local_start.tv_sec << "  SECONDS  " << local_start.tv_nsec << "  NANOSECONDS" << endl;
+			client_logfile << "TIME TAKEN: " << local_diff.tv_sec << "  SECONDS  " << local_diff.tv_nsec << "  NANOSECONDS" << endl;
+		}
+	int total_fin = 0;
 	while(1) {
 
-		total_queued = 0;
-		total_idle = 0;
-		queued_busy = 0;
-
+//		total_queued = 0;
+//		total_idle = 0;
+//		queued_busy = 0;
+		total_fin = 0;
 		stringstream worker_load;
 		for(index = 0; index < num_worker; index++) {
                         //int32_t queued_idle = clientRet.svrtosvr(loadstr, loadstr.length(), index);
 			queued_idle = clientRet->svrtosvr(loadstr, loadstr.length(), index);
-                        queued  = queued_idle/10;  // summation of the lengths of the three queues
-                        num_idle = queued_idle%10;   // number of idle cores
-                        total_queued = total_queued + queued;
-                        total_idle   = total_idle + num_idle;
-			num_busy = num_cores - num_idle;
-			load = queued + num_busy;
-			worker_load << load << " ";                 
+//                        queued  = queued_idle/10;  // summation of the lengths of the three queues
+//                        num_idle = queued_idle%10;   // number of idle cores
+//                        total_queued = total_queued + queued;
+//                        total_idle   = total_idle + num_idle;
+//			num_busy = num_cores - num_idle;
+//			load = queued + num_busy;
+			total_fin += queued_idle;
+//			worker_load << load << " ";
+			worker_load << queued_idle << " ";
                 }
-		loadfile << worker_load.str() << endl;
-		total_busy = total_avail_cores - total_idle;
-		queued_busy = total_queued + total_busy;
-		finished = total_num_tasks - queued_busy;
+//		loadfile << worker_load.str() << endl;
+//		total_busy = total_avail_cores - total_idle;
+//		queued_busy = total_queued + total_busy;
+//		finished = total_num_tasks - queued_busy;
+		num_monitor++;
 		clock_gettime(CLOCK_REALTIME, &end_tasks);
 		//cout << "Total busy cores " << total_busy << " Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;//" time = " << end_tasks.tv_sec << " " << end_tasks.tv_nsec << endl;
 		if (client_logfile.is_open() && cl_LOGGING) {
-			client_logfile << "Total busy cores " << total_busy << "  Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;
+//			client_logfile << "Total busy cores " << total_busy << "  Total Load on all workers = " << queued_busy << " No. of tasks finished = " << finished << " Total tasks submitted = " << total_num_tasks << endl;
+			//client_logfile << "No. of tasks finished is:" << total_fin <<", No. of tasks submitted is:" << total_num_tasks << endl;
 		}
-                if(finished == total_num_tasks) {
+//                if(finished == total_num_tasks)
+                if (total_fin == total_num_tasks)
+                {
 
                         clock_gettime(CLOCK_REALTIME, &end_tasks);
                         cout << "\n\n\n\n==============================All tasks finished===========================\n\n\n\n";
@@ -671,8 +688,14 @@ void *monitor_function(void* args) {
 		client_logfile << "TIME END: " << end_tasks.tv_sec << "  SECONDS  " << end_tasks.tv_nsec << "  NANOSECONDS" << "\n";
 		client_logfile << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << endl;
 		client_logfile << "Total messages between all servers = " << total_msg_count << endl;
-
+		client_logfile << "Total monitoring times is = " << num_monitor << endl;
+		client_logfile.flush();
 		client_logfile.close();
+		if (loadfile.is_open())
+		{
+			loadfile.flush();
+			loadfile.close();
+		}
 		//return 1;
 	}
 	pthread_exit(NULL);
