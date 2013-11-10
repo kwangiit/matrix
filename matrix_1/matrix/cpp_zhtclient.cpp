@@ -48,7 +48,7 @@ int ZHTClient::initialize(string configFilePath, string memberListFilePath,
 		else if ((strcmp(key, "NUM_REPLICAS")) == 0) {
 			this->NUM_REPLICAS = ivalue + 1; //note: +1 is must
 			//cout<<"NUM_REPLICAS = "<< NUM_REPLICAS <<endl;
-		} 
+		}
 
 		else if ((strcmp(key, "WORK_STEAL")) == 0) {
 			this->WORK_STEAL = ivalue;
@@ -64,18 +64,17 @@ int ZHTClient::initialize(string configFilePath, string memberListFilePath,
 
 }
 
-
 //============================Anupam==========================================================================================
 //transfer a key to a host index where it should go
 struct HostEntity ZHTClient::index2Host(int index) {
-	
+
 	struct HostEntity host = this->memberList.at(index);
 	//cout << " Index = " << index << " host = " << host.port << endl;
 	return host;
 }
 
 int ZHTClient::index2SockLRU(int index, bool tcp) {
-        struct HostEntity dest = this->index2Host(index);
+	struct HostEntity dest = this->index2Host(index);
 
 	stringstream ss;
 	ss << dest.host;
@@ -85,23 +84,20 @@ int ZHTClient::index2SockLRU(int index, bool tcp) {
 
 	int sock = 0;
 	if (tcp == true) {
-		sock = CONNECTION_CACHE.fetch(key, tcp);
-		if (sock <= 0) {
 //			cout << "host not found in cache, making connection..." << endl;
-			sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
+		sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
 //			cout << "created sock = " << sock << endl;
-			if (sock <= 0) {
-				cerr << "Client insert:making connection failed." << endl;
-				return -1;
-			} else {
-				int tobeRemoved = -1;
-				CONNECTION_CACHE.insert(key, sock, tobeRemoved);
-				if (tobeRemoved != -1) {
+		if (sock <= 0) {
+			cerr << "Client insert:making connection failed." << endl;
+			return -1;
+		} else {
+			int tobeRemoved = -1;
+			CONNECTION_CACHE.insert(key, sock, tobeRemoved);
+			if (tobeRemoved != -1) {
 //					cout << "sock " << tobeRemoved	<< ", will be removed, which shouldn't be 0."<< endl;
-					close(tobeRemoved);
-				}
+				close(tobeRemoved);
 			}
-		} //end if sock<0
+		}
 	} else { //UDP
 
 		if (UDP_SOCKET <= 0) {
@@ -114,8 +110,49 @@ int ZHTClient::index2SockLRU(int index, bool tcp) {
 	return sock;
 }
 
-//=====================================================================================================================================
+/*
+ int ZHTClient::index2SockLRU2(int index, bool tcp) {
+ struct HostEntity dest = this->index2Host(index);
 
+ stringstream ss;
+ ss << dest.host;
+ ss << ":";
+ ss << dest.port;
+ string key = ss.str();
+
+ int sock = 0;
+ if (tcp == true) {
+ sock = CONNECTION_CACHE.fetch(key, tcp);
+ if (sock <= 0) {
+ //			cout << "host not found in cache, making connection..." << endl;
+ sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
+ //			cout << "created sock = " << sock << endl;
+ if (sock <= 0) {
+ cerr << "Client insert:making connection failed." << endl;
+ return -1;
+ } else {
+ int tobeRemoved = -1;
+ CONNECTION_CACHE.insert(key, sock, tobeRemoved);
+ if (tobeRemoved != -1) {
+ //					cout << "sock " << tobeRemoved	<< ", will be removed, which shouldn't be 0."<< endl;
+ close(tobeRemoved);
+ }
+ }
+ } //end if sock<0
+ } else { //UDP
+
+ if (UDP_SOCKET <= 0) {
+ sock = makeClientSocket(dest.host.c_str(), dest.port, TCP);
+ UDP_SOCKET = sock;
+ } else
+ sock = UDP_SOCKET;
+ }
+
+ return sock;
+ }
+ */
+
+//=====================================================================================================================================
 //transfer a key to a host index where it should go
 struct HostEntity ZHTClient::str2Host(string str) {
 	Package pkg;
@@ -262,17 +299,17 @@ int ZHTClient::insert(string str) {
 
 	char *c_str;
 	int size = str.length();
-        c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-        if(c_str == NULL){
-                cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
-                exit(1);
-        }
-        int len = copystring(c_str, str);
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
+		cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
+		exit(1);
+	}
+	int len = copystring(c_str, str);
 
 	if (package.virtualpath().empty()) //empty key not allowed.
 		return -1;
 	/*if (package.realfullpath().empty()) //coup, to fix ridiculous bug of protobuf!
-		package.set_realfullpath(" ");*/
+	 package.set_realfullpath(" ");*/
 
 	package.set_operation(3); //1 for look up, 2 for remove, 3 for insert
 	package.set_replicano(5); //5: original, 3 not original
@@ -288,7 +325,8 @@ int ZHTClient::insert(string str) {
 	//cout << "cpp_zhtclient: zht_insert: " << str << endl;
 
 	//pthread_mutex_lock(&msg_lock);
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP);
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP);
 	//pthread_mutex_unlock(&msg_lock);
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
 //	cout <<"Client inseret sent: "<<sentSize<<endl;
@@ -319,7 +357,7 @@ int ZHTClient::lookup(string str, string &returnStr) {
 	if (package.virtualpath().empty()) //empty key not allowed.
 		return -1;
 	/*if (package.realfullpath().empty()) //coup, to fix ridiculous bug of protobuf!
-		package.set_realfullpath(" ");*/
+	 package.set_realfullpath(" ");*/
 
 	package.set_operation(1); // 1 for look up, 2 for remove, 3 for insert
 	package.set_replicano(3); //5: original, 3 not original
@@ -329,14 +367,14 @@ int ZHTClient::lookup(string str, string &returnStr) {
 	struct HostEntity dest = this->str2Host(str);
 //	cout << "client::lookup is called, now send request..." << endl;
 
-        char *c_str;
-        int size = str.length();
-        c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-        if(c_str == NULL){
-                cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
-                exit(1);
-        }
-        int len = copystring(c_str, str);
+	char *c_str;
+	int size = str.length();
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
+		cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
+		exit(1);
+	}
+	int len = copystring(c_str, str);
 
 	Package pack;
 	pack.ParseFromString(str);
@@ -351,7 +389,8 @@ int ZHTClient::lookup(string str, string &returnStr) {
 //	cout<<"sock = "<<sock<<endl;
 	sockaddr_in recvAddr;	//cout << "lookup str = " << str << endl;
 	//pthread_mutex_lock(&msg_lock);
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP);
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP);
 	//pthread_mutex_unlock(&msg_lock);
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
 //	int ret = generalSendTCP(sock, str.c_str());
@@ -378,19 +417,19 @@ int ZHTClient::lookup(string str, string &returnStr) {
 			//cout << "ZHTClient::lookup: buff = " << buff << " size = " << rcv_size << endl;
 			sRecv.assign(buff); //cout << "ZHTClient::lookup: for key " << package.virtualpath() << " recd = "  << sRecv << endl;
 			try {
-			returnStr = sRecv.substr(3); //the left is real thing need to be deserilized.
+				returnStr = sRecv.substr(3); //the left is real thing need to be deserilized.
+			} catch (exception& e) {
+				cout << "ZHTClient::lookup: (substr(3)) " << " " << e.what()
+						<< endl;
+				exit(1);
 			}
-			catch (exception& e) {
-                                cout << "ZHTClient::lookup: (substr(3)) " << " " << e.what() << endl;
-                        	exit(1);
-                        }
 			try {
-			sStatus = sRecv.substr(0, 3); //the first three chars means status code, like 001, 002, -98, -99 and so on.
+				sStatus = sRecv.substr(0, 3); //the first three chars means status code, like 001, 002, -98, -99 and so on.
+			} catch (exception& e) {
+				cout << "ZHTClient::lookup: (substr(0, 3)) " << " " << e.what()
+						<< endl;
+				exit(1);
 			}
-			catch (exception& e) {
-                                cout << "ZHTClient::lookup: (substr(0, 3)) " << " " << e.what() << endl;
-                                exit(1);
-                        }
 		}
 
 //		cout << "after protocol judge" << endl;
@@ -409,18 +448,18 @@ int ZHTClient::append(string str) {
 	package.ParseFromString(str);
 
 	char *c_str;
-        int size = str.length();
-        c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-        if(c_str == NULL){
-                cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
-                exit(1);
-        }
-        int len = copystring(c_str, str);
+	int size = str.length();
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
+		cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
+		exit(1);
+	}
+	int len = copystring(c_str, str);
 
 	if (package.virtualpath().empty()) //empty key not allowed.
 		return -1;
 	/*if (package.realfullpath().empty()) //coup, to fix ridiculous bug of protobuf!
-		package.set_realfullpath(" ");*/
+	 package.set_realfullpath(" ");*/
 
 	package.set_operation(4); //1 for look up, 2 for remove, 3 for insert, 4 for append
 	package.set_replicano(5); //5: original, 3 not original
@@ -433,12 +472,13 @@ int ZHTClient::append(string str) {
 	struct HostEntity dest = this->str2Host(str);
 	sockaddr_in recvAddr;
 	//pthread_mutex_lock(&msg_lock);
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP);
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP);
 	//pthread_mutex_unlock(&msg_lock);
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
 //      cout <<"Client inseret sent: "<<sentSize<<endl;
 	int32_t* ret_buf = (int32_t*) malloc(sizeof(int32_t));
-	
+
 	//pthread_mutex_lock(&msg_lock);
 //      generalReveiveTCP(sock, (void*) ret_buf, sizeof(int32_t), 0);
 	generalReceive(sock, (void*) ret_buf, 4, recvAddr, 0, TCP);
@@ -462,18 +502,18 @@ int ZHTClient::remove(string str) {
 	package.ParseFromString(str);
 
 	char *c_str;
-        int size = str.length();
-        c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-        if(c_str == NULL){
-                cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
-                exit(1);
-        }
-        int len = copystring(c_str, str);
+	int size = str.length();
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
+		cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
+		exit(1);
+	}
+	int len = copystring(c_str, str);
 
 	if (package.virtualpath().empty()) //empty key not allowed.
 		return -1;
 	/*if (package.realfullpath().empty()) //coup, to fix ridiculous bug of protobuf!
-		package.set_realfullpath(" ");*/
+	 package.set_realfullpath(" ");*/
 
 	package.set_operation(2); //1 for look up, 2 for remove, 3 for insert
 	package.set_replicano(3); //5: original, 3 not original
@@ -485,7 +525,8 @@ int ZHTClient::remove(string str) {
 	struct HostEntity dest = this->str2Host(str);
 	sockaddr_in recvAddr;
 	//pthread_mutex_lock(&msg_lock);
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP);
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP);
 	//pthread_mutex_unlock(&msg_lock);
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
 //		cout<<"remove sentSize "<< sentSize <<endl;
@@ -517,7 +558,7 @@ int copystring(char *c_str, string str) {
 	int i, j;
 	int len = str.length();
 
-	for(i = 0; i < 5; i++) {
+	for (i = 0; i < 5; i++) {
 		c_str[i] = '\0';
 	}
 
@@ -525,16 +566,16 @@ int copystring(char *c_str, string str) {
 	ss << len;
 	string len_str(ss.str());
 
-	for(i = 0; i < len_str.length(); i++) {
+	for (i = 0; i < len_str.length(); i++) {
 		c_str[i] = len_str[i];
 	}
 	i = 5;
 	/*for(j = 0 ; j < len; j++) {
-		c_str[i++] = str[j];
-	}*/
-	memcpy(&c_str[i], str.c_str(), str.length()+1);
+	 c_str[i++] = str[j];
+	 }*/
+	memcpy(&c_str[i], str.c_str(), str.length() + 1);
 	//c_str[i++] = '\0';
-	return (i+len);
+	return (i + len);
 }
 
 int32_t ZHTClient::send(string str, int size) {
@@ -543,19 +584,19 @@ int32_t ZHTClient::send(string str, int size) {
 	package.ParseFromString(str);
 
 	char *c_str;
-	c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-	if(c_str == NULL){
-                cout << "ZHTClient::send: " << strerror(errno) << endl;
-                exit(1);
-        }
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
+		cout << "ZHTClient::send: " << strerror(errno) << endl;
+		exit(1);
+	}
 	int len = copystring(c_str, str);
 
 	if (package.virtualpath().empty()) //empty key not allowed.
 		return -1;
 	//cout << "C++ string len = " << str.length() << endl; cout << "C++ string: \n" << str << endl; 
 	/*cout << "C string: " << endl;
-	for(int i = 0; i < len; i++) cout << c_str[i]; cout << endl;
-	return 1;*/
+	 for(int i = 0; i < len; i++) cout << c_str[i]; cout << endl;
+	 return 1;*/
 
 	int sock = this->str2SockLRU(str, TCP);
 	reuseSock(sock);
@@ -564,7 +605,8 @@ int32_t ZHTClient::send(string str, int size) {
 
 	//pthread_mutex_lock(&msg_lock);
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP);
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP);
 	//pthread_mutex_unlock(&msg_lock);
 
 	//cout << " Sent size = " << sentSize << endl;
@@ -586,23 +628,29 @@ int32_t ZHTClient::svrtosvr(string str, int size, int index) {
 	cout << "please" << endl;
 
 	if (package.virtualpath().empty()) 	//empty key not allowed.
-	{	return -1; cout << "why" << endl;}
+	{
+		return -1;
+		cout << "why" << endl;
+	}
 	str = package.SerializeAsString();
 
 	char *c_str;
-	c_str = (char*)malloc((size + 5 + 1) * sizeof(char));
-	if(c_str == NULL){
+	c_str = (char*) malloc((size + 5 + 1) * sizeof(char));
+	if (c_str == NULL) {
 		cout << "ZHTClient::svrtosvr: " << strerror(errno) << endl;
 		exit(1);
-	} 
+	}
 	int len = copystring(c_str, str);
 
 	if (package.virtualpath().empty()) //empty key not allowed.
-	{	return -1; cout << "what is the hell!" << endl; }
+	{
+		return -1;
+		cout << "what is the hell!" << endl;
+	}
 	//cout << "C++ string len = " << str.length() << endl; cout << "C++ string: \n" << str << endl; 
 	/*cout << "C string: " << endl;
-	for(int i = 0; i < len; i++) cout << c_str[i]; cout << endl;
-	return 1;*/
+	 for(int i = 0; i < len; i++) cout << c_str[i]; cout << endl;
+	 return 1;*/
 
 	int sock = this->index2SockLRU(index, TCP);
 	reuseSock(sock);
@@ -612,7 +660,8 @@ int32_t ZHTClient::svrtosvr(string str, int size, int index) {
 	//pthread_mutex_lock(&msg_lock); //cout << "lock acquired" << endl;
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
 	cout << "what is the fuck!" << dest.host.data() << endl;
-	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len, TCP); //cout << "svrsvr sent" << endl;
+	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
+			TCP); //cout << "svrsvr sent" << endl;
 	//pthread_mutex_unlock(&msg_lock);
 	int32_t* ret_buf = (int32_t*) malloc(sizeof(int32_t));
 	//pthread_mutex_lock(&msg_lock);
