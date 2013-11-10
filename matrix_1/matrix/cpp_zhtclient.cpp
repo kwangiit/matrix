@@ -73,45 +73,7 @@ struct HostEntity ZHTClient::index2Host(int index) {
 	return host;
 }
 
-int ZHTClient::index2SockLRU(int index, bool tcp) {
-	struct HostEntity dest = this->index2Host(index);
-
-	stringstream ss;
-	ss << dest.host;
-	ss << ":";
-	ss << dest.port;
-	string key = ss.str();
-
-	int sock = 0;
-	if (tcp == true) {
-//			cout << "host not found in cache, making connection..." << endl;
-		sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
-//			cout << "created sock = " << sock << endl;
-		if (sock <= 0) {
-			cerr << "Client insert:making connection failed." << endl;
-			return -1;
-		} else {
-			int tobeRemoved = -1;
-			CONNECTION_CACHE.insert(key, sock, tobeRemoved);
-			if (tobeRemoved != -1) {
-//					cout << "sock " << tobeRemoved	<< ", will be removed, which shouldn't be 0."<< endl;
-				close(tobeRemoved);
-			}
-		}
-	} else { //UDP
-
-		if (UDP_SOCKET <= 0) {
-			sock = makeClientSocket(dest.host.c_str(), dest.port, TCP);
-			UDP_SOCKET = sock;
-		} else
-			sock = UDP_SOCKET;
-	}
-
-	return sock;
-}
-
-/*
- int ZHTClient::index2SockLRU2(int index, bool tcp) {
+/*int ZHTClient::index2SockLRU(int index, bool tcp) {
  struct HostEntity dest = this->index2Host(index);
 
  stringstream ss;
@@ -122,8 +84,6 @@ int ZHTClient::index2SockLRU(int index, bool tcp) {
 
  int sock = 0;
  if (tcp == true) {
- sock = CONNECTION_CACHE.fetch(key, tcp);
- if (sock <= 0) {
  //			cout << "host not found in cache, making connection..." << endl;
  sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
  //			cout << "created sock = " << sock << endl;
@@ -138,7 +98,6 @@ int ZHTClient::index2SockLRU(int index, bool tcp) {
  close(tobeRemoved);
  }
  }
- } //end if sock<0
  } else { //UDP
 
  if (UDP_SOCKET <= 0) {
@@ -149,8 +108,47 @@ int ZHTClient::index2SockLRU(int index, bool tcp) {
  }
 
  return sock;
- }
- */
+ }*/
+
+int ZHTClient::index2SockLRU(int index, bool tcp) {
+	struct HostEntity dest = this->index2Host(index);
+
+	stringstream ss;
+	ss << dest.host;
+	ss << ":";
+	ss << dest.port;
+	string key = ss.str();
+
+	int sock = 0;
+	if (tcp == true) {
+		sock = CONNECTION_CACHE.fetch(key, tcp);
+		if (sock <= 0) {
+			//			cout << "host not found in cache, making connection..." << endl;
+			sock = makeClientSocket(dest.host.c_str(), dest.port, tcp);
+			//			cout << "created sock = " << sock << endl;
+			if (sock <= 0) {
+				cerr << "Client insert:making connection failed." << endl;
+				return -1;
+			} else {
+				int tobeRemoved = -1;
+				CONNECTION_CACHE.insert(key, sock, tobeRemoved);
+				if (tobeRemoved != -1) {
+					//					cout << "sock " << tobeRemoved	<< ", will be removed, which shouldn't be 0."<< endl;
+					close(tobeRemoved);
+				}
+			}
+		} //end if sock<0
+	} else { //UDP
+
+		if (UDP_SOCKET <= 0) {
+			sock = makeClientSocket(dest.host.c_str(), dest.port, TCP);
+			UDP_SOCKET = sock;
+		} else
+			sock = UDP_SOCKET;
+	}
+
+	return sock;
+}
 
 //=====================================================================================================================================
 //transfer a key to a host index where it should go
@@ -625,12 +623,9 @@ int32_t ZHTClient::svrtosvr(string str, int size, int index) {
 	Package package;
 	package.ParseFromString(str);
 
-	cout << "please" << endl;
-
 	if (package.virtualpath().empty()) 	//empty key not allowed.
 	{
 		return -1;
-		cout << "why" << endl;
 	}
 	str = package.SerializeAsString();
 
@@ -645,7 +640,6 @@ int32_t ZHTClient::svrtosvr(string str, int size, int index) {
 	if (package.virtualpath().empty()) //empty key not allowed.
 	{
 		return -1;
-		cout << "what is the hell!" << endl;
 	}
 	//cout << "C++ string len = " << str.length() << endl; cout << "C++ string: \n" << str << endl; 
 	/*cout << "C string: " << endl;
@@ -659,7 +653,7 @@ int32_t ZHTClient::svrtosvr(string str, int size, int index) {
 	sockaddr_in recvAddr; //cout << "going to acquire lock" << endl;
 	//pthread_mutex_lock(&msg_lock); //cout << "lock acquired" << endl;
 	//int sentSize = generalSendTo(dest.host.data(), dest.port, sock, str.c_str(), str.size(), TCP);
-	cout << "what is the fuck!" << dest.host.data() << endl;
+	//cout << "what is the fuck!" << dest.host.data() << endl;
 	int sentSize = generalSendTo(dest.host.data(), dest.port, sock, c_str, len,
 			TCP); //cout << "svrsvr sent" << endl;
 	//pthread_mutex_unlock(&msg_lock);

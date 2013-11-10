@@ -24,8 +24,9 @@ ofstream loadfile;
 
 #define EIGHT_KILOBYTES 8192
 #define STRING_THRESHOLD EIGHT_KILOBYTES
-typedef deque<string> NodeList;
-map<uint32_t, NodeList> update_map;
+		typedef deque<string> NodeList;
+		map<uint32_t,
+NodeList> update_map;
 map<uint32_t, NodeList> update_map_zht;
 
 static uint32_t tcount = 0;
@@ -33,75 +34,76 @@ static uint32_t tcount = 0;
 vector<double> workload(2000);
 
 void get_map(vector<string> &mqueue, uint32_t num_nodes) {
-        //map<uint32_t, NodeList> update_map;
-        //uint32_t num_nodes = svrclient.memberList.size();
-        for(vector<string>::iterator it = mqueue.begin(); it != mqueue.end(); ++it) {
-                Package package;
-                package.ParseFromString(*it); //cout << "key = " << package.virtualpath() << endl;
-                uint32_t serverid = myhash(package.virtualpath().c_str(), num_nodes);
-                string str(*it); str.append("#");
-                if(update_map.find(serverid) == update_map.end()) {
-                        str.append("$");
-                        NodeList new_list;
-                        new_list.push_back(str);
-                        update_map.insert(make_pair(serverid, new_list));
-                }
-                else {
-                        NodeList &exist_list = update_map[serverid];
-                        string last_str(exist_list.back());
-                        if((last_str.size() + str.size()) > STRING_THRESHOLD) {
-                                str.append("$");
-                                exist_list.push_back(str);
-                        }
-                        else {
-                                exist_list.pop_back();
-                                str.append(last_str);
-                                exist_list.push_back(str);
-                        }
-                }
-        }
-        //return update_map;
+	//map<uint32_t, NodeList> update_map;
+	//uint32_t num_nodes = svrclient.memberList.size();
+	for (vector<string>::iterator it = mqueue.begin(); it != mqueue.end();
+			++it) {
+		Package package;
+		package.ParseFromString(*it); //cout << "key = " << package.virtualpath() << endl;
+		uint32_t serverid = myhash(package.virtualpath().c_str(), num_nodes);
+		string str(*it);
+		str.append("#");
+		if (update_map.find(serverid) == update_map.end()) {
+			str.append("$");
+			NodeList new_list;
+			new_list.push_back(str);
+			update_map.insert(make_pair(serverid, new_list));
+		} else {
+			NodeList &exist_list = update_map[serverid];
+			string last_str(exist_list.back());
+			if ((last_str.size() + str.size()) > STRING_THRESHOLD) {
+				str.append("$");
+				exist_list.push_back(str);
+			} else {
+				exist_list.pop_back();
+				str.append(last_str);
+				exist_list.push_back(str);
+			}
+		}
+	}
+	//return update_map;
 }
 
 void get_map_1(vector<string> &mqueue, uint32_t num_nodes) {
-        //map<uint32_t, NodeList> update_map;
-        //uint32_t num_nodes = svrclient.memberList.size();
-        for(vector<string>::iterator it = mqueue.begin(); it != mqueue.end(); ++it) {
-                Package package;
-                package.ParseFromString(*it); //cout << "key = " << package.virtualpath() << endl;
-                uint32_t serverid = myhash(package.virtualpath().c_str(), num_nodes);
-                string str(*it); str.append("#");
-                if(update_map_zht.find(serverid) == update_map_zht.end()) {
-                        str.append("$");
-                        NodeList new_list;
-                        new_list.push_back(str);
-                        update_map_zht.insert(make_pair(serverid, new_list));
-                }
-                else {
-                        NodeList &exist_list = update_map_zht[serverid];
-                        string last_str(exist_list.back());
-                        if((last_str.size() + str.size()) > STRING_THRESHOLD) {
-                                str.append("$");
-                                exist_list.push_back(str);
-                        }
-                        else {
-                                exist_list.pop_back();
-                                str.append(last_str);
-                                exist_list.push_back(str);
-                        }
-                }
-        }
-        //return update_map;
+	//map<uint32_t, NodeList> update_map;
+	//uint32_t num_nodes = svrclient.memberList.size();
+	for (vector<string>::iterator it = mqueue.begin(); it != mqueue.end();
+			++it) {
+		Package package;
+		package.ParseFromString(*it); //cout << "key = " << package.virtualpath() << endl;
+		uint32_t serverid = myhash(package.virtualpath().c_str(), num_nodes);
+		string str(*it);
+		str.append("#");
+		if (update_map_zht.find(serverid) == update_map_zht.end()) {
+			str.append("$");
+			NodeList new_list;
+			new_list.push_back(str);
+			update_map_zht.insert(make_pair(serverid, new_list));
+		} else {
+			NodeList &exist_list = update_map_zht[serverid];
+			string last_str(exist_list.back());
+			if ((last_str.size() + str.size()) > STRING_THRESHOLD) {
+				str.append("$");
+				exist_list.push_back(str);
+			} else {
+				exist_list.pop_back();
+				str.append(last_str);
+				exist_list.push_back(str);
+			}
+		}
+	}
+	//return update_map;
 }
 
 //initialize client parameters
-int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int log, int index, int num_cores, int monitor_interval, string workload_file) {
+int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet,
+		int log, int index, int num_cores, int monitor_interval,
+		string workload_file) {
 	//cout << "mc: prefix = " << prefix << " shared = " << shared << endl;
 
 	//client_id is the host name of the client
 
-	if(set_ip(client_id))
-	{
+	if (set_ip(client_id)) {
 		printf("Could not get the IP address of this machine!\n");
 		return -1;
 	}
@@ -109,7 +111,7 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 	total_num_tasks = num_tasks;
 	ncores = num_cores;
 	minterval = monitor_interval;
-        //total_submitted = num_tasks;
+	//total_submitted = num_tasks;
 
 	// string host("localhost");
 	cout << "before!" << client_id << endl;
@@ -125,7 +127,7 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 	cl_LOGGING = log;
 	stringstream index_ss;
 	index_ss << index;
-	if(cl_LOGGING && selfindex == 0) {
+	if (cl_LOGGING && selfindex == 0) {
 		outputfile.append(prefix);
 		outputfile.append("client_log.txt");
 		outputfile.append(index_ss.str());
@@ -133,13 +135,11 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 		client_logfile.open(outputfile.c_str());
 	}
 
-	if (!workload_file.empty())
-	{
+	if (!workload_file.empty()) {
 		int index = 0;
 		ifstream workloadFile(workload_file.c_str());
 		string line;
-		while (getline(workloadFile, line))
-		{
+		while (getline(workloadFile, line)) {
 			double tmp = atof(line.c_str());
 			workload[index] = tmp;
 			index++;
@@ -155,7 +155,7 @@ int MATRIXClient::init(int num_tasks, int numSleep, ZHTClient &clientRet, int lo
 
 	pthread_attr_init(&attr); // set thread detachstate attribute to DETACHED
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	
+
 	return 0;
 }
 
@@ -167,138 +167,147 @@ struct submit_args {
 
 void get_adjlist(int num_tasks, AdjList &adj_list, int DAG_choice) {
 
-	#define MAX_CHILDREN 100
+#define MAX_CHILDREN 100
 
-	if(DAG_choice == 0) { // bag of tasks
+	if (DAG_choice == 0) { // bag of tasks
 		for (int i = 0; i < num_tasks; i++) { // New nodes of 'higher' rank than all nodes generated till now
-                	// Edges from old nodes ('nodes') to new ones ('new_nodes')
-	                vector<int> new_list;
-        	        adj_list.insert(make_pair(i, new_list));
-        	}
+			// Edges from old nodes ('nodes') to new ones ('new_nodes')
+			vector<int> new_list;
+			adj_list.insert(make_pair(i, new_list));
+		}
 	}
 
-	else if(DAG_choice == 1) { // random DAG
-		#define MIN_PER_RANK 1 // Nodes/Rank: How 'fat' the DAG should be
-        	#define MAX_PER_RANK 5
-	        #define MIN_RANKS 3    // Ranks: How 'tall' the DAG should be
-        	#define MAX_RANKS 5
-	        #define PERCENT 30     // Chance of having an Edge
-
-        	srand (time (NULL));
-	        int height = floor(sqrt(num_tasks));    //height = MIN_RANKS + (rand () % (MAX_RANKS - MIN_RANKS + 1));
-        	int new_nodes = ceil(sqrt(num_tasks));  //new_nodes = MIN_PER_RANK + (rand () % (MAX_PER_RANK - MIN_PER_RANK + 1));
-	        int nodes = 0;
-
-        	for (int i = 0; i < height; i++) { // New nodes of 'higher' rank than all nodes generated till now
-                	// Edges from old nodes ('nodes') to new ones ('new_nodes')
-	                for (int j = 0; j < nodes; j++) {
-        	                for (int k = 0; k < new_nodes; k++) {
-                	                if ( (rand () % 100) < PERCENT) {
-                        	                if(adj_list.find(j) == adj_list.end()) {
-                                	                vector<int> new_list;
-                                        	        new_list.push_back(k + nodes);
-                                                	adj_list.insert(make_pair(j, new_list));
-	                                        }
-        	                                else {
-                	                                vector<int> &exist_list = adj_list[j];
-							if(exist_list.size() < MAX_CHILDREN)
-	                        	                        exist_list.push_back(k + nodes);
-                                	        }
-                                        	if(adj_list.find(k + nodes) == adj_list.end()) {
-	                                               	adj_list.insert(make_pair(k + nodes, vector<int>()));
-	                                        }
-        	                        }
-                	        }
-                	}
-	                nodes += new_nodes; // Accumulate into old node set
-        	}
-	}
-
-	else if(DAG_choice == 2) { // pipeline DAG
+	else if (DAG_choice == 1) { // random DAG
+#define MIN_PER_RANK 1 // Nodes/Rank: How 'fat' the DAG should be
+#define MAX_PER_RANK 5
+#define MIN_RANKS 3    // Ranks: How 'tall' the DAG should be
+#define MAX_RANKS 5
+#define PERCENT 30     // Chance of having an Edge
+		srand(time(NULL));
+		int height = floor(sqrt(num_tasks)); //height = MIN_RANKS + (rand () % (MAX_RANKS - MIN_RANKS + 1));
+		int new_nodes = ceil(sqrt(num_tasks)); //new_nodes = MIN_PER_RANK + (rand () % (MAX_PER_RANK - MIN_PER_RANK + 1));
 		int nodes = 0;
-        	int num_pipeline = floor(sqrt(num_tasks));
-	        int pipeline_height = ceil(sqrt(num_tasks));
 
-        	for (int i = 0; i < num_pipeline; i++) {
-                	for (int j = 0; j < pipeline_height; j++) { // New nodes of 'higher' rank than all nodes generated till now
-	                // Edges from old nodes ('nodes') to new ones ('new_nodes')
-        	                if(adj_list.find(nodes) == adj_list.end()) {
-                	                vector<int> new_list;
-                        	        new_list.push_back(nodes+1);
-                                	adj_list.insert(make_pair(nodes, new_list));
-	                        }
-        	                else {
-                	                vector<int> &exist_list = adj_list[nodes];
-                        	        exist_list.push_back(nodes+1);
-	                        }
-        	                if(adj_list.find(nodes+1) == adj_list.end()) {
-                	                adj_list.insert(make_pair(nodes+1, vector<int>()));
-                        	}
-	                        nodes++; // Accumulate into old node set
-        	        }
-                	nodes++;
-        	}
+		for (int i = 0; i < height; i++) { // New nodes of 'higher' rank than all nodes generated till now
+			// Edges from old nodes ('nodes') to new ones ('new_nodes')
+			for (int j = 0; j < nodes; j++) {
+				for (int k = 0; k < new_nodes; k++) {
+					if ((rand() % 100) < PERCENT) {
+						if (adj_list.find(j) == adj_list.end()) {
+							vector<int> new_list;
+							new_list.push_back(k + nodes);
+							adj_list.insert(make_pair(j, new_list));
+						} else {
+							vector<int> &exist_list = adj_list[j];
+							if (exist_list.size() < MAX_CHILDREN)
+								exist_list.push_back(k + nodes);
+						}
+						if (adj_list.find(k + nodes) == adj_list.end()) {
+							adj_list.insert(
+									make_pair(k + nodes, vector<int>()));
+						}
+					}
+				}
+			}
+			nodes += new_nodes; // Accumulate into old node set
+		}
 	}
 
-	else if(DAG_choice == 3) { // fan in DAG
-	        AdjList adj_list1;
-	        adj_list1.insert(make_pair(0, vector<int>()));
-	        int index = 0; int count = pow(MAX_CHILDREN, 0);
-        	int num_level = floor(log(num_tasks)/log(MAX_CHILDREN));
-	        int j = 0; int num = 1;
-	        while(j <= num_level) {
-                	while(index < count) {
-        	                vector<int> &exist_list = adj_list1[index];
-	                        for (int i = num; i < num+MAX_CHILDREN; i++) {
-                                	exist_list.push_back(i);
-                        	        if(adj_list1.find(i) == adj_list1.end()) {
-                	                        adj_list1.insert(make_pair(i, vector<int>()));
-        	                        }
-	                                if(i >= num_tasks) {
-                                	        index = count; j = num_level+1; break;
-                        	        }
-                	        } num += MAX_CHILDREN;
-        	                index++;
-	                }
-                	count += pow(MAX_CHILDREN, ++j);
-        	}
+	else if (DAG_choice == 2) { // pipeline DAG
+		int nodes = 0;
+		int num_pipeline = floor(sqrt(num_tasks));
+		int pipeline_height = ceil(sqrt(num_tasks));
 
-		for(AdjList::iterator it = adj_list1.begin(); it != adj_list1.end(); ++it) {
-        	        int vertex = it->first;
-	                if(adj_list.find(vertex) == adj_list.end()) {
-                        	adj_list.insert(make_pair(vertex, vector<int>()));
-                	}
-        	        vector<int> &alist = it->second; int alist_size = alist.size();
-	                for(int i = 0; i < alist_size; i++) {
-                        	int v = alist[i];
-                	        if(adj_list.find(v) == adj_list.end()) {
-        	                        adj_list.insert(make_pair(v, vector<int>()));
-	                        }
-	                        vector<int> &exist_list = adj_list[v]; exist_list.push_back(vertex);
-                	}
-        	}
+		for (int i = 0; i < num_pipeline; i++) {
+			for (int j = 0; j < pipeline_height; j++) { // New nodes of 'higher' rank than all nodes generated till now
+				// Edges from old nodes ('nodes') to new ones ('new_nodes')
+				if (adj_list.find(nodes) == adj_list.end()) {
+					vector<int> new_list;
+					new_list.push_back(nodes + 1);
+					adj_list.insert(make_pair(nodes, new_list));
+				} else {
+					vector<int> &exist_list = adj_list[nodes];
+					exist_list.push_back(nodes + 1);
+				}
+				if (adj_list.find(nodes + 1) == adj_list.end()) {
+					adj_list.insert(make_pair(nodes + 1, vector<int>()));
+				}
+				nodes++; // Accumulate into old node set
+			}
+			nodes++;
+		}
 	}
 
-	else if(DAG_choice == 4) { // fan out DAG
-	        adj_list.insert(make_pair(0, vector<int>()));
-        	int index = 0; int count = pow(MAX_CHILDREN, 0);
-	        int num_level = floor(log(num_tasks)/log(MAX_CHILDREN));
-        	int j = 0; int num = 1;
-	        while(j <= num_level) {
-        	        while(index < count) {
-                	        vector<int> &exist_list = adj_list[index];
-                        	for (int i = num; i < num+MAX_CHILDREN; i++) {
-                                	exist_list.push_back(i);
-	                                if(adj_list.find(i) == adj_list.end()) {
-        	                                adj_list.insert(make_pair(i, vector<int>()));
-                	                }
-                        	        if(i >= num_tasks)
-                                	        return;
-	                        } num += MAX_CHILDREN;
-        	                index++;
-                	}
-        	        count += pow(MAX_CHILDREN, ++j);
-	        }
+	else if (DAG_choice == 3) { // fan in DAG
+		AdjList adj_list1;
+		adj_list1.insert(make_pair(0, vector<int>()));
+		int index = 0;
+		int count = pow(MAX_CHILDREN, 0);
+		int num_level = floor(log(num_tasks) / log(MAX_CHILDREN));
+		int j = 0;
+		int num = 1;
+		while (j <= num_level) {
+			while (index < count) {
+				vector<int> &exist_list = adj_list1[index];
+				for (int i = num; i < num + MAX_CHILDREN; i++) {
+					exist_list.push_back(i);
+					if (adj_list1.find(i) == adj_list1.end()) {
+						adj_list1.insert(make_pair(i, vector<int>()));
+					}
+					if (i >= num_tasks) {
+						index = count;
+						j = num_level + 1;
+						break;
+					}
+				}
+				num += MAX_CHILDREN;
+				index++;
+			}
+			count += pow(MAX_CHILDREN, ++j);
+		}
+
+		for (AdjList::iterator it = adj_list1.begin(); it != adj_list1.end();
+				++it) {
+			int vertex = it->first;
+			if (adj_list.find(vertex) == adj_list.end()) {
+				adj_list.insert(make_pair(vertex, vector<int>()));
+			}
+			vector<int> &alist = it->second;
+			int alist_size = alist.size();
+			for (int i = 0; i < alist_size; i++) {
+				int v = alist[i];
+				if (adj_list.find(v) == adj_list.end()) {
+					adj_list.insert(make_pair(v, vector<int>()));
+				}
+				vector<int> &exist_list = adj_list[v];
+				exist_list.push_back(vertex);
+			}
+		}
+	}
+
+	else if (DAG_choice == 4) { // fan out DAG
+		adj_list.insert(make_pair(0, vector<int>()));
+		int index = 0;
+		int count = pow(MAX_CHILDREN, 0);
+		int num_level = floor(log(num_tasks) / log(MAX_CHILDREN));
+		int j = 0;
+		int num = 1;
+		while (j <= num_level) {
+			while (index < count) {
+				vector<int> &exist_list = adj_list[index];
+				for (int i = num; i < num + MAX_CHILDREN; i++) {
+					exist_list.push_back(i);
+					if (adj_list.find(i) == adj_list.end()) {
+						adj_list.insert(make_pair(i, vector<int>()));
+					}
+					if (i >= num_tasks)
+						return;
+				}
+				num += MAX_CHILDREN;
+				index++;
+			}
+			count += pow(MAX_CHILDREN, ++j);
+		}
 	}
 
 	else {
@@ -308,203 +317,205 @@ void get_adjlist(int num_tasks, AdjList &adj_list, int DAG_choice) {
 }
 
 void print_AdjList(AdjList &adj_list) {
-        for(AdjList::iterator it = adj_list.begin(); it != adj_list.end(); ++it) {
-                vector<int> exist_list = it->second;
-                cout << " " << it->first << " -> ";
-                for(int i = 0; i < exist_list.size(); i++) {
-                        cout << " " << exist_list[i] << ",";
-                }
-                cout << endl;
-        }
+	for (AdjList::iterator it = adj_list.begin(); it != adj_list.end(); ++it) {
+		vector<int> exist_list = it->second;
+		cout << " " << it->first << " -> ";
+		for (int i = 0; i < exist_list.size(); i++) {
+			cout << " " << exist_list[i] << ",";
+		}
+		cout << endl;
+	}
 }
 
 int get_DAG(AdjList &adj_list, TaskDAG &dag, string clientid) {
-        InDegree indegree;
-        for(AdjList::iterator it = adj_list.begin(); it != adj_list.end(); ++it) {
-                vector<int> exist_list = it->second;
-                int source_vertex = it->first;
-                if(indegree.find(source_vertex) == indegree.end()) {
-                        indegree[source_vertex] = 0;
-                }
+	InDegree indegree;
+	for (AdjList::iterator it = adj_list.begin(); it != adj_list.end(); ++it) {
+		vector<int> exist_list = it->second;
+		int source_vertex = it->first;
+		if (indegree.find(source_vertex) == indegree.end()) {
+			indegree[source_vertex] = 0;
+		}
 
-                stringstream adj_ss;
-                for(int i = 0; i < exist_list.size(); i++) {
-                        int dest_vertex = exist_list[i];
+		stringstream adj_ss;
+		for (int i = 0; i < exist_list.size(); i++) {
+			int dest_vertex = exist_list[i];
 
-                        // add each vertex to string
-                        adj_ss << exist_list[i] << clientid << "\'";
+			// add each vertex to string
+			adj_ss << exist_list[i] << clientid << "\'";
 
-                        // update indegree count of each vertex in adjacency list
-                        if(indegree.find(dest_vertex) == indegree.end()) {
-                                indegree[dest_vertex] = 1;
-                        }
-                        else {
-                                indegree[dest_vertex] = indegree[dest_vertex] + 1;
-                        }
-			if(dag.find(dest_vertex) != dag.end()) {
-                                TaskDAG_Value &value = dag[dest_vertex];
-                                value.first = indegree[dest_vertex];
-                        }
-                }
-                adj_ss << "\"";
-                string adjliststring(adj_ss.str()); // list of vertices delimited by \' with a final \"
+			// update indegree count of each vertex in adjacency list
+			if (indegree.find(dest_vertex) == indegree.end()) {
+				indegree[dest_vertex] = 1;
+			} else {
+				indegree[dest_vertex] = indegree[dest_vertex] + 1;
+			}
+			if (dag.find(dest_vertex) != dag.end()) {
+				TaskDAG_Value &value = dag[dest_vertex];
+				value.first = indegree[dest_vertex];
+			}
+		}
+		adj_ss << "\"";
+		string adjliststring(adj_ss.str()); // list of vertices delimited by \' with a final \"
 
-                // store info into DAG
-                TaskDAG_Value value(indegree[source_vertex], adjliststring);
-                dag[source_vertex] = value;
-        }
+		// store info into DAG
+		TaskDAG_Value value(indegree[source_vertex], adjliststring);
+		dag[source_vertex] = value;
+	}
 
-        return indegree.size();
+	return indegree.size();
 }
 
 void print_DAG(TaskDAG &dag) {
 	uint32_t expected_notifications = 0;
-        for(TaskDAG::iterator it = dag.begin(); it != dag.end(); ++it) {
-                int vertex = it->first;
-                TaskDAG_Value value(it->second);
+	for (TaskDAG::iterator it = dag.begin(); it != dag.end(); ++it) {
+		int vertex = it->first;
+		TaskDAG_Value value(it->second);
 		expected_notifications += value.first;
-                //cout << "Vertex = " << vertex << " Indegree = " << value.first << " AdjList = " << value.second << endl;
-		client_logfile << "Vertex = " << vertex << " Indegree = " << value.first << " AdjList = " << value.second << endl;
-        }
+		//cout << "Vertex = " << vertex << " Indegree = " << value.first << " AdjList = " << value.second << endl;
+		client_logfile << "Vertex = " << vertex << " Indegree = " << value.first
+				<< " AdjList = " << value.second << endl;
+	}
 	//cout << "expected_notifications = " << expected_notifications << endl;
-	client_logfile << "expected_notifications = " << expected_notifications << endl;
+	client_logfile << "expected_notifications = " << expected_notifications
+			<< endl;
 }
 
-TaskDAG generate_DAG(int &num_tasks, int &num_nodes, string clientid, int choice) {
-        AdjList adj_list;
-        get_adjlist(num_tasks, adj_list, choice);
-        //print_AdjList(adj_list);
-        TaskDAG dag;
-        num_nodes = get_DAG(adj_list, dag, clientid);
-        //cout << "Num nodes = " << num_nodes << endl;
-        //print_DAG(dag); exit(1);
+TaskDAG generate_DAG(int &num_tasks, int &num_nodes, string clientid,
+		int choice) {
+	AdjList adj_list;
+	get_adjlist(num_tasks, adj_list, choice);
+	//print_AdjList(adj_list);
+	TaskDAG dag;
+	num_nodes = get_DAG(adj_list, dag, clientid);
+	//cout << "Num nodes = " << num_nodes << endl;
+	//print_DAG(dag); exit(1);
 	return dag;
 }
-
 
 void* submit(void *args) {
 
 	//vector<string>* task_str_list = (vector<string>*)args;
 	uint32_t count = 0;
-	submit_args* thread_args = (submit_args*)args; //cout << "Thread: per_client_task = " << thread_args->per_client_task << endl;
-	while(count != thread_args->per_client_task) {
+	submit_args* thread_args = (submit_args*) args; //cout << "Thread: per_client_task = " << thread_args->per_client_task << endl;
+	while (count != thread_args->per_client_task) {
 //cout << "Thread: task_str_list empty " << thread_args->task_str_list->size() << endl;
-	while(thread_args->task_str_list->size() > 0) {
-		string str;
-		pthread_mutex_lock(&submit_q);
-		if(thread_args->task_str_list->size() > 0) {
-			str = thread_args->task_str_list->back();
-			//cout << "Thread: Task " << count << ": " << str << endl;
-			thread_args->task_str_list->pop_back();
-		}
-		else {
-			//cout << "Thread: task_str_list empty " << thread_args->task_str_list->size() << endl;
+		while (thread_args->task_str_list->size() > 0) {
+			string str;
+			pthread_mutex_lock(&submit_q);
+			if (thread_args->task_str_list->size() > 0) {
+				str = thread_args->task_str_list->back();
+				//cout << "Thread: Task " << count << ": " << str << endl;
+				thread_args->task_str_list->pop_back();
+			} else {
+				//cout << "Thread: task_str_list empty " << thread_args->task_str_list->size() << endl;
+				pthread_mutex_unlock(&submit_q);
+				continue;
+			}
 			pthread_mutex_unlock(&submit_q);
-			continue;
+			int32_t ret = thread_args->clientRet.insert(str); //cout << "Insert status = " << ret << endl;//<< " string = " << str << endl;
+			//string result;
+			//ret = thread_args->clientRet.lookup(str, result); cout << "Lookup status = " << ret << " string = " << result << endl;
+			count++; //cout << "Thread: Task " << count << ": sent" << endl;
 		}
-		pthread_mutex_unlock(&submit_q);
-		int32_t ret = thread_args->clientRet.insert(str); //cout << "Insert status = " << ret << endl;//<< " string = " << str << endl;
-		//string result;
-		//ret = thread_args->clientRet.lookup(str, result); cout << "Lookup status = " << ret << " string = " << result << endl;
-		count++; //cout << "Thread: Task " << count << ": sent" << endl;
-	}
 	}
 }
 
 void submittasks(ZHTClient &clientRet) {
-        /*uint32_t count = task_str_list.size();
-        for(uint32_t i = 0; i < count; i++) {
-                int32_t ret = clientRet.insert(task_str_list[i]); //cout << "task " << i << " sent" << endl;
-        }*/
+	/*uint32_t count = task_str_list.size();
+	 for(uint32_t i = 0; i < count; i++) {
+	 int32_t ret = clientRet.insert(task_str_list[i]); //cout << "task " << i << " sent" << endl;
+	 }*/
 	cout << "now submit tasks!" << "size is:" << update_map.size() << endl;
-        int ret = 0;
-        Package package;
-        package.set_operation(20);
-        package.set_virtualpath("zht_insert");
-        for(map<uint32_t, NodeList>::iterator map_it = update_map.begin(); map_it != update_map.end(); ++map_it) {
-                uint32_t index = map_it->first;
+	int ret = 0;
+	Package package;
+	package.set_operation(20);
+	package.set_virtualpath("zht_insert");
+	for (map<uint32_t, NodeList>::iterator map_it = update_map.begin();
+			map_it != update_map.end(); ++map_it) {
+		uint32_t index = map_it->first;
 		cout << "The index is:" << index << endl;
-                NodeList &update_list = map_it->second;
+		NodeList &update_list = map_it->second;
 		cout << "The size is:" << update_list.size() << endl;
-                while(!update_list.empty()) { //cout << "str = " << update_list.front() << endl;
-                        package.set_realfullpath(update_list.front());
-                        update_list.pop_front();
-                        string update_str = package.SerializeAsString();
-                        ret += clientRet.svrtosvr(update_str, update_str.size(), index);
-                }
-        }
-        cout << " no. tasks inserted = " << ret << endl;
+		while (!update_list.empty()) { //cout << "str = " << update_list.front() << endl;
+			package.set_realfullpath(update_list.front());
+			update_list.pop_front();
+			string update_str = package.SerializeAsString();
+			ret += clientRet.svrtosvr(update_str, update_str.size(), index);
+		}
+	}
+	cout << " no. tasks inserted = " << ret << endl;
 }
 
-vector< vector<string> > tokenize_1(string input, char delim1, char delim2, int &num_vector, int &per_vector_count) {
-	vector< vector<string> > token_vector;
+vector<vector<string> > tokenize_1(string input, char delim1, char delim2,
+		int &num_vector, int &per_vector_count) {
+	vector<vector<string> > token_vector;
 	stringstream whole_stream(input);
-	num_vector = 0; per_vector_count = 0;
+	num_vector = 0;
+	per_vector_count = 0;
 	string perstring;
-	while(getline(whole_stream, perstring, delim1)) { //cout << "pertask = " << pertask << endl;
+	while (getline(whole_stream, perstring, delim1)) { //cout << "pertask = " << pertask << endl;
 		num_vector++;
-                vector<string> per_vector;
-                size_t prev = 0, pos;
+		vector<string> per_vector;
+		size_t prev = 0, pos;
 		while ((pos = perstring.find_first_of(delim2, prev)) != string::npos) {
-                       	if (pos > prev) {
+			if (pos > prev) {
 				try {
-                               		per_vector.push_back(perstring.substr(prev, pos-prev));
-				}
-				catch (exception& e) {
-					cout << "tokenize: (prev, pos-prev) " << " " << e.what() << endl;
+					per_vector.push_back(perstring.substr(prev, pos - prev));
+				} catch (exception& e) {
+					cout << "tokenize: (prev, pos-prev) " << " " << e.what()
+							<< endl;
 					exit(1);
 				}
-                       	}
-              		prev = pos+1;
-               	}
-               	if (prev < perstring.length()) {
-			try {
-                       		per_vector.push_back(perstring.substr(prev, string::npos));
 			}
-			catch (exception& e) {
-                       	        cout << "tokenize: (prev, string::npos) " << " " << e.what() << endl;
-                               	exit(1);
-                        }
-               	}
+			prev = pos + 1;
+		}
+		if (prev < perstring.length()) {
+			try {
+				per_vector.push_back(perstring.substr(prev, string::npos));
+			} catch (exception& e) {
+				cout << "tokenize: (prev, string::npos) " << " " << e.what()
+						<< endl;
+				exit(1);
+			}
+		}
 		try {
 			token_vector.push_back(per_vector);
+		} catch (exception& e) {
+			cout << "tokenize: token_vector.push_back " << " " << e.what()
+					<< endl;
+			exit(1);
 		}
-		catch (exception& e) {
-                        cout << "tokenize: token_vector.push_back " << " " << e.what() << endl;
-                	exit(1);
-                }
 	}
-	if(token_vector.size() > 0) {
+	if (token_vector.size() > 0) {
 		per_vector_count = token_vector.at(0).size();
 	}
 	return token_vector;
 }
 
-
-void submittaskszht(ZHTClient &clientRet, string client_id)
-{
+void submittaskszht(ZHTClient &clientRet, string client_id) {
 	int ret = 0;
 	Package package;
 	package.set_virtualpath(client_id);
 	package.set_operation(21);
 	cout << "Ok, what is the hell!\n" << endl;
 
-	for (map<uint32_t, NodeList>::iterator map_it = update_map_zht.begin(); map_it != update_map_zht.end(); ++map_it)
-	{
+	for (map<uint32_t, NodeList>::iterator map_it = update_map_zht.begin();
+			map_it != update_map_zht.end(); ++map_it) {
 		uint32_t index = map_it->first;
 		NodeList &update_list = map_it->second;
-		while (!update_list.empty())
-		{
+		while (!update_list.empty()) {
 			int num_vector_count, per_vector_count;
 			string alltasks;
-			vector< vector<string> > tokenize_string = tokenize_1(update_list.front(), '$', '#', num_vector_count, per_vector_count);
+			vector<vector<string> > tokenize_string = tokenize_1(
+					update_list.front(), '$', '#', num_vector_count,
+					per_vector_count);
 			//cout << " num_vector_count = " << num_vector_count << " per_vector_count = " << per_vector_count << endl;
-			for(int i = 0; i < per_vector_count; i++)
-			{
+			for (int i = 0; i < per_vector_count; i++) {
 				Package tmpPackage;
 				tmpPackage.ParseFromString(tokenize_string.at(0).at(i));
 				string key = tmpPackage.virtualpath();
-				alltasks.append(key); alltasks.append("\'\"");
+				alltasks.append(key);
+				alltasks.append("\'\"");
 			} //cout << "Serve
 			package.set_realfullpath(alltasks);
 			string str = package.SerializeAsString();
@@ -540,18 +551,20 @@ void submittaskszht(ZHTClient &clientRet, string client_id)
 
 int index_start = 0;
 //initialize all tasks
-int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int max_tasks_per_package, ZHTClient &clientRet, int DAG_choice, int num_para){
+int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode,
+		int max_tasks_per_package, ZHTClient &clientRet, int DAG_choice,
+		int num_para) {
 
 	srand(time(NULL)); // Random seed for all time measurements
 
 	// Task description
-        char task[10];  
-        memset(task, '\0', 10);
-        sprintf(task, "%d", numSleep); // sleep time - 1, 2, 4, 8, 16, 32
+	char task[10];
+	memset(task, '\0', 10);
+	sprintf(task, "%d", numSleep); // sleep time - 1, 2, 4, 8, 16, 32
 	string task_desc(task);
 
 	int num_worker = clientRet.memberList.size();
-        int toserver = (num_worker-1)/(selfindex+1); // Server index where the tasks will be initially submitted to the Wait queue
+	int toserver = (num_worker - 1) / (selfindex + 1); // Server index where the tasks will be initially submitted to the Wait queue
 	//cout << "to server = " << toserver << endl;
 
 	// Initialize a random DAG based on the number of tasks requested by client
@@ -567,7 +580,8 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 	timespec sub_time;
 	clock_gettime(CLOCK_REALTIME, &sub_time);
 	uint64_t sub_time_ns;
-	sub_time_ns = (uint64_t)sub_time.tv_sec*1000000000 + (uint64_t)sub_time.tv_nsec;
+	sub_time_ns = (uint64_t) sub_time.tv_sec * 1000000000
+			+ (uint64_t) sub_time.tv_nsec;
 
 	// Arguments to be passed to submission thread:
 	// 1. Vector that holds serialized packages for each individual task, 
@@ -589,11 +603,11 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 	clock_gettime(CLOCK_REALTIME, &start_tasks);
 
 	// For all tasks in the DAG, package it and store it in NoVOHT
-        //for(i = 0; i < num_tasks; i++){ 
+	//for(i = 0; i < num_tasks; i++){
 	int task_index = 0;
-	for(TaskDAG::iterator it = dag.begin(); it != dag.end(); ++it) {
+	for (TaskDAG::iterator it = dag.begin(); it != dag.end(); ++it) {
 		int task_id = it->first;
-                TaskDAG_Value value(it->second);
+		TaskDAG_Value value(it->second);
 
 		stringstream task_id_ss;
 		task_id_ss << task_id << client_id; // Task ID + Client ID
@@ -602,7 +616,7 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 
 		Package package;
 		package.set_virtualpath(task_id_ss.str()); // Key is task ID + client ID
-		package.set_operation(3);		   // Insert task and its decription into NoVoHT
+		package.set_operation(3); // Insert task and its decription into NoVoHT
 //		cout << "key = " << package.virtualpath();
 //		cout << " op = " << package.operation() << endl;
 //		string str1 = package.SerializeAsString(); // Serialize the package
@@ -614,24 +628,22 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 //		cout << "nodehistory = " << package.nodehistory();
 		package.set_currnode(toserver); 	    // Current node
 //		cout << " currnode = " << package.currnode();
-		package.set_nummoves(0); 		    // Number of migrations, initially it is zero
+		package.set_nummoves(0); // Number of migrations, initially it is zero
 //		cout << " nummoves = " << package.nummoves();
-		package.set_numwait(value.first); 	    // Number of notifications to receive before it can be moved to ready queue
+		package.set_numwait(value.first); // Number of notifications to receive before it can be moved to ready queue
 //		cout << " numwait = " << package.numwait() << endl;
-		//package.set_notlist(value.second);	    // List of tasks to be notified after finishing execution
-		//cout << "notlist = " << package.notlist() << endl;
+				//package.set_notlist(value.second);	    // List of tasks to be notified after finishing execution
+				//cout << "notlist = " << package.notlist() << endl;
 //		string str2 = package.SerializeAsString();  // Serialize the package
 //cout << " str2 = " << str2 << endl;
 
 		stringstream package_content_ss;
 		//package_content_ss << value.second; // List of tasks to be notified after finishing execution
-		package_content_ss << "NULL"; package_content_ss << "\'"; 				// Task completion status
-		if (num_para <= 15)
-		{
+		package_content_ss << "NULL";
+		package_content_ss << "\'"; 				// Task completion status
+		if (num_para <= 15) {
 			package_content_ss << task_desc; 				// Task Description
-		}
-		else
-		{
+		} else {
 			ostringstream os;
 			os << workload.at(task_index);
 			string tmpStr = os.str();
@@ -639,34 +651,41 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 			task_index++;
 		}
 		package_content_ss << "\'";
-		package_content_ss << task_id_ss.str();	package_content_ss << "\'"; 			// Task ID
-		package_content_ss << sub_time_ns; package_content_ss << "\'"; package_content_ss << "\""; // Task Submission Time
+		package_content_ss << task_id_ss.str();
+		package_content_ss << "\'"; 			// Task ID
+		package_content_ss << sub_time_ns;
+		package_content_ss << "\'";
+		package_content_ss << "\""; // Task Submission Time
 		package_content_ss << value.second; // List of tasks to be notified after finishing execution
 		package.set_realfullpath(package_content_ss.str());
 		string str = package.SerializeAsString(); // Serialize the package
 //cout << " str = " << str << endl;
-		//pthread_mutex_lock(&submit_q);
-		// Push the serialized task into a vector which is shared by another thread that handles the submission over the network
+				//pthread_mutex_lock(&submit_q);
+				// Push the serialized task into a vector which is shared by another thread that handles the submission over the network
 		task_str_list.push_back(str);
 		//pthread_mutex_unlock(&submit_q);
-       	}
-	clock_gettime(CLOCK_REALTIME, &end_tasks); timespec diff1 = timediff(start_tasks, end_tasks);
-        cout << "novoht jobs created. TIME TAKEN: " << diff1.tv_sec << "  SECONDS  " << diff1.tv_nsec << "  NANOSECONDS" << endl;
+	}
+	clock_gettime(CLOCK_REALTIME, &end_tasks);
+	timespec diff1 = timediff(start_tasks, end_tasks);
+	cout << "novoht jobs created. TIME TAKEN: " << diff1.tv_sec << "  SECONDS  "
+			<< diff1.tv_nsec << "  NANOSECONDS" << endl;
 
-        get_map(task_str_list, num_worker);
+	get_map(task_str_list, num_worker);
 
-        clock_gettime(CLOCK_REALTIME, &start_tasks);
+	clock_gettime(CLOCK_REALTIME, &start_tasks);
 
-        submittasks(clientRet);
+	submittasks(clientRet);
 
 	//pthread_join(submit_thread, NULL); // Wait for the submission thread to finish sending the tasks over the network
 	clock_gettime(CLOCK_REALTIME, &end_tasks); // Measure the end time to insert all tasks into NoVoHT
 	timespec diff = timediff(start_tasks, end_tasks); // Measure the total time to insert all tasks into NoVoHT
-	cout << num_tasks << " tasks inserted into NoVoHT" <<  endl;
-	cout << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << endl;
+	cout << num_tasks << " tasks inserted into NoVoHT" << endl;
+	cout << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec
+			<< "  NANOSECONDS" << endl;
 	if (client_logfile.is_open() && cl_LOGGING && selfindex == 0) {
-		client_logfile << num_tasks << "tasks inserted into NoVoHT" <<  endl;
-		client_logfile << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << endl;
+		client_logfile << num_tasks << "tasks inserted into NoVoHT" << endl;
+		client_logfile << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  "
+				<< diff.tv_nsec << "  NANOSECONDS" << endl;
 	}
 	//exit(1);
 	// Some temp parameters
@@ -723,9 +742,9 @@ int MATRIXClient::initializeTasks(int num_tasks_req, int numSleep, int mode, int
 // so if every server returns load = -4 it implies that all submitted tasks are complete
 void *monitor_function(void* args) {
 
-	ZHTClient *clientRet = (ZHTClient*)args;
-	
-	Package loadPackage, shutdownPackage;	
+	ZHTClient *clientRet = (ZHTClient*) args;
+
+	Package loadPackage, shutdownPackage;
 	string loadmessage("Monitoring Information!");
 	loadPackage.set_virtualpath(loadmessage);
 	loadPackage.set_operation(15);
@@ -778,36 +797,42 @@ void *monitor_function(void* args) {
 //	cout << cmd << " " << result << endl;
 	//cout << "client: minlines = " << min_lines << " cmd = " << cmd << " result = " << result << endl;
 	/*string filename(shared);
-	filename = filename + "start_info";
-	string cmd("wc -l ");
-	cmd = cmd + filename + " | awk {\'print $1\'}";
-	string result = executeShell(cmd);*/
-	
+	 filename = filename + "start_info";
+	 string cmd("wc -l ");
+	 cmd = cmd + filename + " | awk {\'print $1\'}";
+	 string result = executeShell(cmd);*/
+
 //	while(atoi(result.c_str()) < 1) {
 //		usleep(minterval);
 //		result = executeShell(cmd); cout << " temp result = " << result << endl;
 //	}
 //	cout << "client: minlines = 1 " << " cmd = " << cmd << " result = " << result << endl;
 	//cout << "starting to monitor" << endl;
-	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << endl;
+	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  "
+			<< start_tasks.tv_nsec << "  NANOSECONDS" << endl;
 	timespec local_start, local_diff;
 	clock_gettime(CLOCK_REALTIME, &local_start);
 	local_diff = timediff(start_tasks, local_start);
 	if (client_logfile.is_open() && cl_LOGGING) {
-			client_logfile << "Submission time: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << endl;
-			client_logfile << "Monitoring time: " << local_start.tv_sec << "  SECONDS  " << local_start.tv_nsec << "  NANOSECONDS" << endl;
-			client_logfile << "TIME TAKEN: " << local_diff.tv_sec << "  SECONDS  " << local_diff.tv_nsec << "  NANOSECONDS" << endl;
-		}
+		client_logfile << "Submission time: " << start_tasks.tv_sec
+				<< "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS"
+				<< endl;
+		client_logfile << "Monitoring time: " << local_start.tv_sec
+				<< "  SECONDS  " << local_start.tv_nsec << "  NANOSECONDS"
+				<< endl;
+		client_logfile << "TIME TAKEN: " << local_diff.tv_sec << "  SECONDS  "
+				<< local_diff.tv_nsec << "  NANOSECONDS" << endl;
+	}
 	int total_fin = 0;
-	while(1) {
+	while (1) {
 
 //		total_queued = 0;
 //		total_idle = 0;
 //		queued_busy = 0;
 		total_fin = 0;
 		stringstream worker_load;
-		for(index = 0; index < num_worker; index++) {
-                        //int32_t queued_idle = clientRet.svrtosvr(loadstr, loadstr.length(), index);
+		for (index = 0; index < num_worker; index++) {
+			//int32_t queued_idle = clientRet.svrtosvr(loadstr, loadstr.length(), index);
 			queued_idle = clientRet->svrtosvr(loadstr, loadstr.length(), index);
 //                        queued  = queued_idle/10;  // summation of the lengths of the three queues
 //                        num_idle = queued_idle%10;   // number of idle cores
@@ -818,7 +843,7 @@ void *monitor_function(void* args) {
 			total_fin += queued_idle;
 //			worker_load << load << " ";
 			worker_load << queued_idle << " ";
-                }
+		}
 //		loadfile << worker_load.str() << endl;
 //		total_busy = total_avail_cores - total_idle;
 //		queued_busy = total_queued + total_busy;
@@ -831,41 +856,48 @@ void *monitor_function(void* args) {
 			//client_logfile << "No. of tasks finished is:" << total_fin <<", No. of tasks submitted is:" << total_num_tasks << endl;
 		}
 //                if(finished == total_num_tasks)
-                if (total_fin >= total_num_tasks)
-                {
+		if (total_fin >= total_num_tasks) {
 
-                        clock_gettime(CLOCK_REALTIME, &end_tasks);
-                        cout << "\n\n\n\n==============================All tasks finished===========================\n\n\n\n";
-                        break;
-                }
+			clock_gettime(CLOCK_REALTIME, &end_tasks);
+			cout
+					<< "\n\n\n\n==============================All tasks finished===========================\n\n\n\n";
+			break;
+		}
 
 		usleep(minterval);
 	}
 
 	total_msg_count = 0;
-	for(index = 0; index < num_worker; index++) {
+	for (index = 0; index < num_worker; index++) {
 		//clientRet.svrtosvr(endstr, endstr.length(), index);
 		ret = clientRet->svrtosvr(endstr, endstr.length(), index);
 		total_msg_count += ret;
 	}
 
-	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << "\n";
-	cout << "TIME END: " << end_tasks.tv_sec << "  SECONDS  " << end_tasks.tv_nsec << "  NANOSECONDS" << "\n";
+	cout << "TIME START: " << start_tasks.tv_sec << "  SECONDS  "
+			<< start_tasks.tv_nsec << "  NANOSECONDS" << "\n";
+	cout << "TIME END: " << end_tasks.tv_sec << "  SECONDS  "
+			<< end_tasks.tv_nsec << "  NANOSECONDS" << "\n";
 	timespec diff = timediff(start_tasks, end_tasks);
-	cout << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << "\n";
+	cout << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec
+			<< "  NANOSECONDS" << "\n";
 	cout << "Total messages between all servers = " << total_msg_count << endl;
-	if (client_logfile.is_open() && cl_LOGGING) {		
+	if (client_logfile.is_open() && cl_LOGGING) {
 
-		client_logfile << "\n\n\n\n==============================All tasks finished===========================\n\n\n\n";
-		client_logfile << "TIME START: " << start_tasks.tv_sec << "  SECONDS  " << start_tasks.tv_nsec << "  NANOSECONDS" << "\n";
-		client_logfile << "TIME END: " << end_tasks.tv_sec << "  SECONDS  " << end_tasks.tv_nsec << "  NANOSECONDS" << "\n";
-		client_logfile << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  " << diff.tv_nsec << "  NANOSECONDS" << endl;
-		client_logfile << "Total messages between all servers = " << total_msg_count << endl;
+		client_logfile
+				<< "\n\n\n\n==============================All tasks finished===========================\n\n\n\n";
+		client_logfile << "TIME START: " << start_tasks.tv_sec << "  SECONDS  "
+				<< start_tasks.tv_nsec << "  NANOSECONDS" << "\n";
+		client_logfile << "TIME END: " << end_tasks.tv_sec << "  SECONDS  "
+				<< end_tasks.tv_nsec << "  NANOSECONDS" << "\n";
+		client_logfile << "TIME TAKEN: " << diff.tv_sec << "  SECONDS  "
+				<< diff.tv_nsec << "  NANOSECONDS" << endl;
+		client_logfile << "Total messages between all servers = "
+				<< total_msg_count << endl;
 		client_logfile << "Total monitoring times is = " << num_monitor << endl;
 		client_logfile.flush();
 		client_logfile.close();
-		if (loadfile.is_open())
-		{
+		if (loadfile.is_open()) {
 			loadfile.flush();
 			loadfile.close();
 		}
@@ -874,37 +906,9 @@ void *monitor_function(void* args) {
 	pthread_exit(NULL);
 }
 
-
 pthread_t MATRIXClient::monitor(int num_tasks, ZHTClient &clientRet) {
 	pthread_t monitor_thread;
 	pthread_create(&monitor_thread, NULL, monitor_function, &clientRet);
 	return monitor_thread;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
