@@ -19,6 +19,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include "net_util.h"
+#include "zht_util.h"
 using namespace std;
 
 //make socket for server, include bind and listen(if TCP), return socket
