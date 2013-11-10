@@ -141,6 +141,8 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	ostringstream oss;
 	oss << selfIndex;
 
+	printf("<ip:selfIndex>: <%s:%d>\n", ip.c_str(), selfIndex);
+
 	//string f1 = file_fin_fp;
 	//f1 = f1 + oss.str();
 	//fin_fp.open(f1.c_str(), ios_base::app);
