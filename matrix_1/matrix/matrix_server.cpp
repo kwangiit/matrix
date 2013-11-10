@@ -187,14 +187,30 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	string cmd("touch ");
 	cmd.append(file_worker_start);
 	executeShell(cmd);
+	system(cmd.c_str());
 
-	worker_start.open(file_worker_start.c_str(), ios_base::app);
-	if (worker_start.is_open()) {
-		worker_start << ip << ":" << selfIndex << " ";
-		worker_start.flush();
-		worker_start.close();
-		worker_start.open(file_worker_start.c_str(), ios_base::app);
+	FILE *fp = fopen(file_worker_start.c_str(), "w+");
+	if (fp != NULL) {
+		//fputs("fopen example", fp);
+		char fbuf[100];
+		memset(fbuf, 0, sizeof(fbuf));
+		sprintf(fbuf, "%s:%d ", ip.c_str(), selfIndex);
+		fwrite(fbuf, sizeof(char), strlen(fbuf), fp);
+		fclose (pFile);
 	}
+
+	/*worker_start.open(file_worker_start.c_str(),
+	 std::ofstream::out | ios_base::app);
+	 if (worker_start.is_open()) {
+
+	 worker_start << ip << ":" << selfIndex << " ";
+	 worker_start.flush();
+	 worker_start.close();
+	 worker_start.open(file_worker_start.c_str(), ios_base::app);
+	 }*/
+
+	worker_start.open(file_worker_start.c_str(),
+			std::ofstream::out | ios_base::app);
 
 	clock_gettime(CLOCK_REALTIME, &poll_start);
 
