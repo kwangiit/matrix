@@ -128,14 +128,14 @@ int makeClientSocket(const char* host, int port, bool tcp) {
 			return -1;
 		}
 
-		printf("connect to [%s,%d]\n", host, port);
-		double start = getTime_msec();
+		/*printf("connect to [%s,%d]\n", host, port);
+		 double start = getTime_msec();*/
 
 		int ret_con = connect(to_sock, (struct sockaddr *) &dest,
 				sizeof(sockaddr));
 
-		double end = getTime_msec();
-		printf("connect to [%s,%d]: %f ms\n", host, port, end - start);
+		/*double end = getTime_msec();
+		 printf("connect to [%s,%d]: %f ms\n", host, port, end - start);*/
 
 		if (ret_con < 0) {
 			cerr << "net_util: error on connect(): " << strerror(errno) << endl;
