@@ -1,0 +1,58 @@
+#!/bin/bash
+
+if [ $# -ne 6 ]
+then
+	#echo Usage: $0     num_nodes     num_tasks     sleep_time mode     DAG_choice
+	echo Usage: $0 num_node num_tasks sleep_time DAG_choice num_cores monitor_interval
+	exit 1
+fi
+
+numNode=$1
+num_tasks=$2
+sleep_time=$3
+DAG_choice=$4
+num_cores=$5
+monitor_interval=$6
+mode=1
+max_tasks_per_package=1000
+logging=0
+
+matrix_home=/home/ubuntu/mnt/matrix_1/
+log_home=/home/ubuntu/mnt/sleephw/
+
+prefix=$log_home
+prefix+=n$numNode/
+shared=$prefix
+
+echo $prefix
+echo $shared
+#tracefile=$shared
+#tracefile+=trace
+#touch $tracefile
+#echo $tracefile
+
+#num_clients=$(echo "l($numNode)/l(2)" | bc -l)
+
+num_clients=$numNode
+#echo $num_clients
+
+rm -rf $shared
+mkdir $shared
+
+nfile=$matrix_home
+nfile+=neighbor$numNode
+
+hostfile=$matrix_home
+hostfile+=hostfile$numNode
+
+
+echo "start to run the client and server"
+echo $matrix_home/matrixstart
+parallel-ssh -t 0 -o /tmp/ -p 250 -O StrictHostKeyChecking=no -O UserKnownHostsFile=/dev/null --hosts=$hostfile "$matrix_home/matrixstart $numNode $num_clients $num_tasks $sleep_time $mode $max_tasks_per_package $logging $prefix $shared $nfile $DAG_choice $num_cores $monitor_interval" &
+
+echo "now wait for 600 seconds until all tasks finished!"
+sleep 600
+
+parallel-ssh -t 0 -o /tmp/ -p 250 -O StrictHostKeyChecking=no -O UserKnownHostsFile=/dev/null --hosts=$hostfile "killall -9 server" &
+sleep 5
+parallel-ssh -t 0 -o /tmp/ -p 250 -O StrictHostKeyChecking=no -O UserKnownHostsFile=/dev/null --hosts=$hostfile "kill -9 $(awk -F' ' '{ print $2 }'<<<$(lsof -w -n -i tcp:50000 | sed -n 2p))"

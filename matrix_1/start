@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if [ $# -ne 4 ]
+then
+	#echo Usage: $0     num_nodes     num_tasks     sleep_time mode     DAG_choice
+	echo Usage: $0 num_node num_tasks sleep_time DAG_choice
+	exit 1
+fi
+
+numNode=$1
+num_tasks=$2
+sleep_time=$3
+DAG_choice=$4
+mode=1
+max_tasks_per_package=1100
+logging=1
+
+prefix=/export/home/arajend/logs_$numNode
+prefix+=_$sleep_time/
+shared=/export/home/arajend/logs_$numNode
+shared+=_$sleep_time/
+
+#tracefile=$shared
+#tracefile+=trace
+#touch $tracefile
+#echo $tracefile
+
+#rm /export/home/arajend/logs/*
+#rm /export/home/arajend/neighbor_$numNode
+#rm /export/home/arajend/startinfo*
+
+num_clients=$(echo "l($numNode)/l(2)" | bc -l)
+num_clients=$(echo "($num_clients+0.5)/1" | bc)
+
+num_clients=$(echo "sqrt($numNode)" | bc -l)
+num_clients=$(echo "($num_clients)/1" | bc)
+#echo $num_clients
+
+rm -rf $shared
+mkdir $shared
+
+nfile=$shared
+nfile+=neighbor_$numNode
+
+pssh -t -1 -P -h /export/home/arajend/live-$numNode ./gen | grep 50 | awk '{print $2,$3}' >> $nfile
+
+pssh -e er -t -1 -P -h /export/home/arajend/live-$numNode ./nodestart $numNode $num_tasks $sleep_time $logging $max_tasks_per_package $logging $prefix $shared $nfile $num_clients $DAG_choice
+

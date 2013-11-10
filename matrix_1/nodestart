@@ -1,0 +1,72 @@
+#!/bin/bash
+
+#Prepare runing code
+server="server_zht"
+client="benchmark_client"
+
+server="server"
+client="client"
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+numNode=$1
+num_tasks=$2
+sleep_time=$3
+mode=$4
+max_tasks_per_package=$5
+logging=$6
+prefix=$7
+shared=$8
+nfile=$9
+num_clients=${10}
+DAG_choice=${11}
+
+ip=`hostname`
+port1=50100
+
+export IP=$ip
+export NNODE=$numNode
+export PORT_FOR_REPLICA=50009
+
+#compare local ip with first ip in neighbor_$numNode
+#read line < $nfile
+#firstip=`echo $line | awk '{print $1}'`
+#firstport=`echo $line | awk '{print $2}'`
+#echo "firstip is $firstip"
+#echo "firstport is $firstport"
+
+declare -a client_list
+for ((i=1;i<=$num_clients;i++))
+do
+client_list[$i]=`cat $nfile | awk NR==$i | awk {'print $1'}`
+done
+
+per_client_task=$(($num_tasks/$num_clients))
+
+for ((i=1;i<=$num_clients;i++))
+do
+if [ "$ip" == "${client_list[$i]}" ]
+then
+echo "match execute client $i $ip ${client_list[$i]} numtasks = $num_tasks"
+/export/home/arajend/$client $per_client_task $nfile /export/home/arajend/zht.cfg TCP $sleep_time $mode $max_tasks_per_package $i $num_tasks $prefix $shared $DAG_choice &
+fi
+done
+
+#if [ "$ip" = "$firstip" ]
+#then
+#echo "firstip is $firstip"
+#echo "match execute client $ip $firstip"
+#sleep 60
+#cout << "Usage: " << argv[0] << "\tnum_tasks\tneighborlist_file\tzht_config_file\tprotocol[TCP/UDP]\tsleep_time\tsubmissionmode[0/1/2]\tmax_tasks_per_package" << endl;
+#/export/home/arajend/$client $num_tasks $nfile /export/home/arajend/zht.cfg TCP $sleep_time $mode $max_tasks_per_package $prefix $shared &
+#echo "client started at $ip"
+#fi
+#else
+#echo "nomatch execute server $ip"
+#cout << "Usage: " << argv[0] << "\tserver_port_no\tneighbor_file\tconfig_file\tProtocol[TCP/UDP]\tUsername\tLogging[0/1]\tmax_tasks_per_package" << endl;
+/export/home/arajend/$server $port1 $nfile /export/home/arajend/zht.cfg TCP anupam $logging $max_tasks_per_package $num_tasks $prefix $shared
+#/export/home/arajend/$server $port2 /export/home/arajend/neighbor_$numNode /export/home/arajend/zht.cfg TCP anupam $logging $max_tasks_per_package &
+#fi
+
+#echo "end of script"
+
