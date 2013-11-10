@@ -196,7 +196,7 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 		memset(fbuf, 0, sizeof(fbuf));
 		sprintf(fbuf, "%s:%d ", ip.c_str(), selfIndex);
 		fwrite(fbuf, sizeof(char), strlen(fbuf), fp);
-		fclose (pFile);
+		fclose(fp);
 	}
 
 	/*worker_start.open(file_worker_start.c_str(),
