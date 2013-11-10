@@ -1343,10 +1343,14 @@ int main(int argc, char *argv[]) {
 
 //	string myHost = "localhost";  local desktop
 
-	const string cmd_checkIP = "ifconfig eth0 | grep \"inet addr\" | awk -F: \'{print $2}\' | awk \'{print $1}\'";
+	const string cmd_checkIP =
+			"ifconfig eth0 | grep \"inet addr\" | awk -F: \'{print $2}\' | awk \'{print $1}\'";
 	string checkIP = executeShell(cmd_checkIP);
 	string myIP = checkIP.substr(0, checkIP.size() - 1);
 	int myIndex = Host2Index(myIP.c_str());
+
+	printf("<cmd_checkIP>:%s\n<checkIP>:%s\n<myIP>:%s\n<myIndex>:\n%d\n",
+			cmd_checkIP.c_str(), checkIP.c_str(), myIP.c_str(), myIndex);
 
 	//int myIndex = Host2Index("localhost");
 	Replicas[0].host = hostList.at((myIndex + 1) % nHost).host;
