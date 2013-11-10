@@ -201,6 +201,8 @@ HostEntity getHostEntity(const string& host, const int& port) {
 	HostEntity he;
 	he.host = host;
 	he.port = port;
+	return he;
+
 	/*
 	 HostEntity aHost;
 	 struct sockaddr_in si_other;
