@@ -1,4 +1,5 @@
 #include "matrix_server.h"
+#include <string.h>
 
 Worker::Worker() {
 
@@ -186,7 +187,7 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	file_worker_start.append(oss.str());
 	string cmd("touch ");
 	cmd.append(file_worker_start);
-	executeShell(cmd);
+	//executeShell(cmd);
 	system(cmd.c_str());
 
 	FILE *fp = fopen(file_worker_start.c_str(), "w+");
@@ -196,6 +197,7 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 		memset(fbuf, 0, sizeof(fbuf));
 		sprintf(fbuf, "%s:%d ", ip.c_str(), selfIndex);
 		fwrite(fbuf, sizeof(char), strlen(fbuf), fp);
+		fflush(fp);
 		fclose(fp);
 	}
 
@@ -207,10 +209,10 @@ Worker::Worker(char *parameters[], NoVoHT *novoht) {
 	 worker_start.flush();
 	 worker_start.close();
 	 worker_start.open(file_worker_start.c_str(), ios_base::app);
-	 }*/
-
-	worker_start.open(file_worker_start.c_str(),
-			std::ofstream::out | ios_base::app);
+	 }
+	 worker_start.open(file_worker_start.c_str(),
+	 std::ofstream::out | ios_base::app);
+	 */
 
 	clock_gettime(CLOCK_REALTIME, &poll_start);
 
@@ -1229,9 +1231,24 @@ void* check_ready_queue(void* args) {
 			pthread_mutex_unlock(&mutex_idle);
 
 			if (!work_exec_flag) {
+
 				work_exec_flag = 1;
-				worker_start << worker->ip << ":" << worker->selfIndex
-						<< " Got jobs..Started excuting" << endl;
+
+				FILE *fp = fopen(file_worker_start.c_str(), "a+");
+				if (fp != NULL) {
+					//fputs("fopen example", fp);
+					char fbuf[100];
+					memset(fbuf, 0, sizeof(fbuf));
+					sprintf(fbuf, "%s:%d Got jobs..Started excuting\n",
+							worker->ip.c_str(), worker->selfIndex);
+					fwrite(fbuf, sizeof(char), strlen(fbuf), fp);
+					fflush(fp);
+					fclose(fp);
+				}
+
+				/*worker_start << worker->ip << ":" << worker->selfIndex
+				 << " Got jobs..Started excuting" << endl;*/
+
 			}
 
 			//cout << "task to lookup = " << qi->task_id << endl;
