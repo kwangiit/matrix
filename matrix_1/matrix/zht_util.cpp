@@ -198,31 +198,34 @@ bool myCompare(struct HostEntity i, struct HostEntity j) {
 
 HostEntity getHostEntity(const string& host, const int& port) {
 
-	HostEntity aHost;
+	HostEntity he;
+	he.host = host;
+	he.port = port;
+	/*
+	 HostEntity aHost;
+	 struct sockaddr_in si_other;
+	 hostent *record;
+	 in_addr *address;
+	 string ip_address;
 
-	struct sockaddr_in si_other;
-	hostent *record;
-	in_addr *address;
-	string ip_address;
+	 record = gethostbyname(host.c_str());
+	 address = (in_addr *) record->h_addr;
+	 ip_address = inet_ntoa(*address);
 
-	record = gethostbyname(host.c_str());
-	address = (in_addr *) record->h_addr;
-	ip_address = inet_ntoa(*address);
+	 memset((char *) &si_other, 0, sizeof(si_other));
+	 si_other.sin_family = AF_INET;
+	 si_other.sin_port = htons(port);
+	 if (inet_aton(ip_address.c_str(), &si_other.sin_addr) == 0) {
+	 fprintf(stderr, "inet_aton() failed\n");
+	 }
 
-	memset((char *) &si_other, 0, sizeof(si_other));
-	si_other.sin_family = AF_INET;
-	si_other.sin_port = htons(port);
-	if (inet_aton(ip_address.c_str(), &si_other.sin_addr) == 0) {
-		fprintf(stderr, "inet_aton() failed\n");
-	}
+	 aHost.si = si_other;
+	 aHost.host = host;
+	 aHost.port = port;
+	 aHost.valid = true;
+	 aHost.sock = -1;
 
-	aHost.si = si_other;
-	aHost.host = host;
-	aHost.port = port;
-	aHost.valid = true;
-	aHost.sock = -1;
-
-	return aHost;
+	 return aHost;*/
 }
 
 vector<struct HostEntity> getMembership(string fileName) {
